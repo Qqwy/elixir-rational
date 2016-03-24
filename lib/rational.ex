@@ -1,29 +1,32 @@
+# TODO: add @specs.
 defmodule Rational do
-  import Kernel, except: [div: 2, *: 2, abs: 1]
+  import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
 
+  # TODO: Add an option to not import inline operators.
   defmacro __using__(_opts) do
     quote do
-      import Kernel, except: [div: 2, *: 2, abs: 1]
+      import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
       import Rational
     end
   end
 
 
   @doc """
-  A Rational number is defined as a dividend and a divisor.
-  Both the dividend and the divisor are integers.
+  A Rational number is defined as a numerator and a denominator.
+  Both the numerator and the denominator are integers.
   """
-  defstruct dividend: 1, divisor: 1
-  @type t :: %Rational{dividend: integer(), divisor: pos_integer()}
+  defstruct numerator: 1, denominator: 1
+  @type t :: %Rational{numerator: integer(), denominator: pos_integer()}
 
   @doc """
   Creates a new Rational number.
   This number is simplified to the most basic form automatically.
+  If the most basic form has the format `_ <|> 1`, it is returned in integer form.
 
-  Note that it is recommended to use integer numbers for the dividend and the divisor.
+  Note that it is recommended to use integer numbers for the numerator and the denominator.
   Floats will be rounded to the nearest integer.
 
-  Rational numbers with a `0` as divisor are not allowed.
+  Rational numbers with a `0` as denominator are not allowed.
 
   ## Examples
 
@@ -34,27 +37,28 @@ defmodule Rational do
       iex> 1.5 <|> 4
       1 <|> 2
   """
-  def dividend <|> divisor
+  def numerator <|> denominator
 
-  def _dividend <|> 0 do
+  def _numerator <|> 0 do
     raise ArithmeticError
   end
 
-  def dividend <|> divisor when is_integer(dividend) and is_integer(divisor) do 
-    %Rational{dividend: dividend, divisor: divisor}
+  def numerator <|> denominator when is_integer(numerator) and is_integer(denominator) do 
+    %Rational{numerator: numerator, denominator: denominator}
     |> simplify
+    |> remove_denominator_if_integer
   end
 
-  def dividend <|> divisor when is_float(dividend) or is_float(divisor) do
-    round(dividend) <|> round(divisor)
+  def numerator <|> denominator when is_float(numerator) or is_float(denominator) do
+    round(numerator) <|> round(denominator)
   end
 
   @doc """
-  Prefix-version of `dividend <|> divisor`.
+  Prefix-version of `numerator <|> denominator`.
   Useful when `<|>` is not available (for instance, when already in use by another module)
   
   """
-  def new(dividend, divisor), do: dividend <|> divisor
+  def new(numerator, denominator), do: numerator <|> denominator
 
 
   @doc """
@@ -66,7 +70,24 @@ defmodule Rational do
       5 <|> 2
   """
   def abs(number) when is_number(number), do: Kernel.abs(number)
-  def abs(%Rational{dividend: dividend, divisor: divisor}), do: Kernel.abs(dividend) <|> divisor
+  def abs(%Rational{numerator: numerator, denominator: denominator}), do: Kernel.abs(numerator) <|> denominator
+
+  @doc """
+  Returns the sign of the number Rational
+ 
+  This is:
+  
+   - 1 if the number is positive.
+   - -1 if the number is negative.
+   - 0 if the number is zero.
+
+  """
+  def sign(%Rational{numerator: numerator}) when numerator > 0, do: 1
+  def sign(%Rational{numerator: numerator}) when numerator < 0, do: -1
+  def sign(number) when is_number(number) and number > 0, do: 1
+  def sign(number) when is_number(number) and number < 0, do: -1
+  def sign(number) when is_number(number), do: 0
+
 
 
   @doc """
@@ -79,17 +100,17 @@ defmodule Rational do
   """
   def mul(rational, number_or_rational)
 
-  def mul(%Rational{dividend: dividend, divisor: divisor}, number) when is_number(number) do
-    Kernel.*(dividend, number) <|> (divisor)
+  def mul(%Rational{numerator: numerator, denominator: denominator}, number) when is_number(number) do
+    Kernel.*(numerator, number) <|> (denominator)
   end
 
-  def mul(number, %Rational{dividend: dividend, divisor: divisor}) when is_number(number) do
-    Kernel.*(dividend, number) <|> (divisor)
+  def mul(number, %Rational{numerator: numerator, denominator: denominator}) when is_number(number) do
+    Kernel.*(numerator, number) <|> (denominator)
   end
 
 
-  def mul(%Rational{dividend: dividend1, divisor: divisor1}, %Rational{dividend: dividend2, divisor: divisor2}) do
-    Kernel.*(dividend1, dividend2) <|> Kernel.*(divisor1, divisor2)
+  def mul(%Rational{numerator: numerator1, denominator: denominator1}, %Rational{numerator: numerator2, denominator: denominator2}) do
+    Kernel.*(numerator1, numerator2) <|> Kernel.*(denominator1, denominator2)
   end
 
   @doc """
@@ -100,10 +121,15 @@ defmodule Rational do
 
   def a * b when is_number(a) and is_number(b), do: Kernel.*(a, b)
 
-  def _a * _b, do: mul(a, b)
+  def a * b, do: mul(a, b)
 
   @doc """
   Divides a Rational by a number (which might be another Rational)
+
+  Dividing a number by a float returns a float.
+  Dividing a number by an integer returns a Rational.
+  Dividing a number by a Rational also returns a Rational.
+
   
   ## Examples
 
@@ -115,19 +141,41 @@ defmodule Rational do
   def div(a, b)
   def div(a, b) when is_number(a) and is_number(b), do: Kernel.div(a, b)
 
-  def div(%Rational{dividend: dividend, divisor: divisor}, number) when is_number(number) do
-    dividend <|> Kernel.*(divisor, number)
+  def div(%Rational{numerator: numerator, denominator: denominator}, number) when is_number(number) do
+    numerator <|> Kernel.*(denominator, number)
   end
 
-  def div(%Rational{dividend: dividend1, divisor: divisor1}, %Rational{dividend: dividend2, divisor: divisor2}) do
-    Kernel.*(dividend1, divisor2) <|> Kernel.*(divisor1, dividend2)
+  # 6 / (2 <|> 3) == 6 * (3 <|> 2)
+  def div(number, %Rational{numerator: numerator, denominator: denominator}) when is_number(number) do
+    mul(number, denominator <|> numerator)
   end
+
+
+  def div(%Rational{numerator: numerator1, denominator: denominator1}, %Rational{numerator: numerator2, denominator: denominator2}) do
+    Kernel.*(numerator1, denominator2) <|> Kernel.*(denominator1, numerator2)
+  end
+
+  @doc """
+  Divides a number by another number.
+
+  Dividing a number by a float returns a float.
+  Dividing a number by an integer returns a Rational.
+  Dividing a number by a Rational also returns a Rational.
+  """
+  def a / b
+
+  # Do not modify float-division behaviour.
+  def a / b when is_float(b) and is_number(a), do:  Kernel./(a, b)
+  
+  def a / b when is_number(a) and is_integer(b), do:  a <|> b
+  def a / b, do: div(a, b)
+
 
 
 
   @doc """
   Returns a binstring representation of the Rational number.
-  If the divisor is `1`, it will be printed as a normal (integer) number.
+  If the denominator is `1`, it will be printed as a normal (integer) number.
 
   ## Examples
 
@@ -135,11 +183,11 @@ defmodule Rational do
       "10 <|> 7"
   """
   def to_string(rational)
-  def to_string(%Rational{dividend: dividend, divisor: divisor}) when divisor == 1 do
-    "#{dividend}"
+  def to_string(%Rational{numerator: numerator, denominator: denominator}) when denominator == 1 do
+    "#{numerator}"
   end
-  def to_string(%Rational{dividend: dividend, divisor: divisor}) do
-    "#{dividend} <|> #{divisor}"
+  def to_string(%Rational{numerator: numerator, denominator: denominator}) do
+    "#{numerator} <|> #{denominator}"
   end
 
   defimpl String.Chars, for: Rational do
@@ -156,13 +204,25 @@ defmodule Rational do
 
 
   # Simplifies the Rational to its most basic form.
-  defp simplify(%Rational{dividend: dividend, divisor: divisor}) do
-    gcdiv = gcd(dividend, divisor)
-    %Rational{dividend: Kernel.div(dividend, gcdiv), divisor: Kernel.div(divisor, gcdiv)}
+  defp simplify(rational)
+
+  defp simplify(%Rational{numerator: numerator, denominator: denominator}) do
+    gcdiv = gcd(numerator, denominator)
+    new_denominator = Kernel.div(denominator, gcdiv)
+    if new_denominator == 1 do
+      numerator
+    else
+      %Rational{numerator: Kernel.div(numerator, gcdiv), denominator: new_denominator}
+    end
   end
 
+  # Returns an integer if the result is of the form _ <|> 1
+  defp remove_denominator_if_integer(rational)
+  defp remove_denominator_if_integer(%Rational{numerator: numerator, denominator: 1}), do: numerator
+  defp remove_denominator_if_integer(rational), do: rational
 
-  # Calculates the Greatest Common Divisor of two numbers.
+
+  # Calculates the Greatest Common denominator of two numbers.
   defp gcd(a, 0), do: abs(a)
   
   defp gcd(0, b), do: abs(b)
