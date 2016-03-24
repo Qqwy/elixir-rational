@@ -1,5 +1,12 @@
 defmodule Rational do
-  import Kernel, except: [div: 2, *: 2]
+  import Kernel, except: [div: 2, *: 2, abs: 1]
+
+  defmacro __using__(_opts) do
+    quote do
+      import Kernel, except: [div: 2, *: 2, abs: 1]
+      import Rational
+    end
+  end
 
 
   @doc """
@@ -7,7 +14,7 @@ defmodule Rational do
   Both the dividend and the divisor are integers.
   """
   defstruct dividend: 1, divisor: 1
-
+  @type t :: %Rational{dividend: integer(), divisor: pos_integer()}
 
   @doc """
   Creates a new Rational number.
@@ -29,7 +36,7 @@ defmodule Rational do
   """
   def dividend <|> divisor
 
-  def dividend <|> 0 do
+  def _dividend <|> 0 do
     raise ArithmeticError
   end
 
@@ -49,8 +56,21 @@ defmodule Rational do
   """
   def new(dividend, divisor), do: dividend <|> divisor
 
+
   @doc """
-  Multiplies a Rational number by a number (which might be another Rational)
+  Returns the absolute version of the given number or Rational.
+
+  ## Examples
+
+      iex>Rational.abs(-5 <|> 2)
+      5 <|> 2
+  """
+  def abs(number) when is_number(number), do: Kernel.abs(number)
+  def abs(%Rational{dividend: dividend, divisor: divisor}), do: Kernel.abs(dividend) <|> divisor
+
+
+  @doc """
+  Multiplies two numbers. (one or both of which might be Rationals)
   
       iex> Rational.mul(2 <|> 3, 10)
       20 <|> 3
@@ -63,9 +83,24 @@ defmodule Rational do
     Kernel.*(dividend, number) <|> (divisor)
   end
 
+  def mul(number, %Rational{dividend: dividend, divisor: divisor}) when is_number(number) do
+    Kernel.*(dividend, number) <|> (divisor)
+  end
+
+
   def mul(%Rational{dividend: dividend1, divisor: divisor1}, %Rational{dividend: dividend2, divisor: divisor2}) do
     Kernel.*(dividend1, dividend2) <|> Kernel.*(divisor1, divisor2)
   end
+
+  @doc """
+  Multiplies two numbers. (one or both of which might be Rationals)
+
+  """
+  def a * b
+
+  def a * b when is_number(a) and is_number(b), do: Kernel.*(a, b)
+
+  def _a * _b, do: mul(a, b)
 
   @doc """
   Divides a Rational by a number (which might be another Rational)
@@ -77,7 +112,8 @@ defmodule Rational do
       iex> Rational.div( 2 <|> 3, 8 <|> 3)
       1 <|> 4
   """
-  def div(rational, number_or_rational)
+  def div(a, b)
+  def div(a, b) when is_number(a) and is_number(b), do: Kernel.div(a, b)
 
   def div(%Rational{dividend: dividend, divisor: divisor}, number) when is_number(number) do
     dividend <|> Kernel.*(divisor, number)
