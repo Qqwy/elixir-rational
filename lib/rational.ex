@@ -1,6 +1,7 @@
 # TODO: add @specs.
 # TODO: >, <, >=, <=
 defmodule Rational do
+  @vsn "0.5"
 
 
   @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1, >: 2, >=: 2, <: 2, <=: 2]
@@ -8,7 +9,7 @@ defmodule Rational do
   @rational_operator [<|>: 2]
 
 
-  import Kernel, except: @overridden_math_functions#[div: 2, *: 2, /: 2, abs: 1, -: 2, -: 1, +: 2, +: 1]
+  import Kernel, except: [div: 2, abs: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1, >: 2, >=: 2, <: 2, <=: 2]
 
   # TODO: Add option to not load the operator.
 
@@ -178,10 +179,10 @@ defmodule Rational do
    - 0 if the number is zero.
 
   """
-  def sign(%Rational{numerator: numerator}) when numerator > 0, do: 1
-  def sign(%Rational{numerator: numerator}) when numerator < 0, do: Kernel.-(1)
-  def sign(number) when is_number(number) and number > 0, do: 1
-  def sign(number) when is_number(number) and number < 0, do: Kernel.-(1)
+  def sign(%Rational{numerator: numerator}) when Kernel.>(numerator, 0), do: 1
+  def sign(%Rational{numerator: numerator}) when Kernel.<(numerator, 0), do: Kernel.-(1)
+  def sign(number) when is_number(number) and Kernel.>(number, 0), do: 1
+  def sign(number) when is_number(number) and Kernel.<(number, 0), do: Kernel.-(1)
   def sign(number) when is_number(number), do: 0
 
   @doc """
@@ -395,35 +396,76 @@ defmodule Rational do
 
 
   """
-  def compare(a, b), when is_number(a) and is_number(b) and a > b do: 1
-  def compare(a, b), when is_number(a) and is_number(b) and a == b do: 0
-  def compare(a, b), when is_number(a) and is_number(b) and a < b do: Kernel.-(1)
+  # def compare(a, b) when is_number(a) and is_number(b) and Kernel.>(a, b), do: 1
+  # def compare(a, b) when is_number(a) and is_number(b) and a == b, do: 0
+  # def compare(a, b) when is_number(a) and is_number(b) and Kernel.<(a, b), do: Kernel.-(1)
 
-  def compare(a, b=%Rational{}), when is_number(a) do
-    Kernel.-(compare(b, a))
+  # def compare(a, b=%Rational{}) when is_number(a) do
+  #   Kernel.-(compare(b, a))
+  # end
+
+  # # Multiply both sides by the denominator:
+  # # (3 <|> 2) < 2 == 3 < (2*2)
+  # def compare(%Rational{numerator: numerator, denominator: denominator}, b) when is_number(b) do
+  #   compare(numerator, Kernel.*(b, denominator))
+  # end
+
+  # def compare(%Rational{numerator: a, denominator: b}, %Rational{numerator: c, denominator: d}) do
+  #   compare(Kernel.*(a,d), Kernel.*(b,c))
+  # end
+
+
+
+  defmacro compare(%Rational{numerator: a, denominator: b}, %Rational{numerator: c, denominator: d}) do
+    quote do
+      compare(Kernel.*(unquote(a), unquote(d)), Kernel.*(unquote(b), unquote(c)))
+    end
   end
 
-  # Multiply both sides by the denominator:
-  # (3 <|> 2) < 2 == 3 < (2*2)
-  def compare(%Rational{numerator: numerator, denominator: denominator}, b), when is_number(b) do
-    compare(numerator, Kernel.*(b, denominator)
+  defmacro compare(%Rational{numerator: numerator, denominator: denominator}, b) do
+    quote do
+      compare(unquote(numerator), Kernel.*(unquote(b), unquote(denominator)))
+    end
   end
 
-  def compare(%Rational{numerator: a, denominator: b}, %Rational{numerator: c, denominator: d}) do
-    compare(Kernel.*(a,d), Kernel.*(b,c))
+  defmacro compare(a, %Rational{numerator: numerator, denominator: denominator}) do
+    quote do
+      compare(Kernel.*(unquote(a), unquote(denominator)), unquote(numerator))
+    end
   end
+
+
+  # Compares any other value that Erlang can understand.
+  defmacro compare(a, b) do
+    quote do
+      (:erlang.>(unquote(a), unquote(b)) && 1)
+      ||
+      (:erlang.<(unquote(a), unquote(b)) && -1)
+      ||
+      (0)
+    end
+  end
+
+
+  # TODO: Rewrite as macros that compile to Erlang statements, so they can be used in guards.
 
   @doc """
   Returns true if *a* is larger than *b*
   """
-  def a > b
-  def (a=%Rational{}) > (b=%Rational{}), do: compare(a, b) == 1
-  def a > b, do: Kernel.>(a, b)
+  defmacro a > b do
+    quote do
+      compare(unquote(a), unquote(b)) == 1
+    end  
+  end
+  #def (a=%Rational{}) > (b=%Rational{}), do: compare(a, b) == 1
+  #def a > b, do: Kernel.>(a, b)
+  
+
   @doc """
   Returns true if *a* is larger than or equal to *b*
   """
   def a >= b
-  def (a=%Rational{}) >= (b=%Rational{}), do: compare(a, b) >= 0
+  def (a=%Rational{}) >= (b=%Rational{}), do: Kernel.>=(compare(a, b),  0)
   def a >= b, do: Kernel.>=(a, b)
   @doc """
   Returns true if *a* is smaller than *b*
@@ -435,7 +477,7 @@ defmodule Rational do
   Returns true if *a* is smaller than or equal to *b*
   """
   def a <= b
-  def (a=%Rational{}) <= (b=%Rational{}), do: compare(a, b) <= 0
+  def (a=%Rational{}) <= (b=%Rational{}), do: Kernel.<=(compare(a, b), 0)
   def a <= b, do: Kernel.<=(a, b)
 
   @doc """
@@ -494,7 +536,7 @@ defmodule Rational do
   defp _pow(x, n, y \\ 1)
   defp _pow(_x, 0, y), do: y
   defp _pow(x, 1, y), do: x * y
-  defp _pow(x, n, y) when n < 0, do: _pow(1 / x, Kernel.-(n), y)
+  defp _pow(x, n, y) when Kernel.<(n, 0), do: _pow(1 / x, Kernel.-(n), y)
   defp _pow(x, n, y) when rem(n, 2) == 0, do: _pow(x * x, div(n, 2), y)
   defp _pow(x, n, y), do: _pow(x * x, div((n - 1), 2), x * y)
     
