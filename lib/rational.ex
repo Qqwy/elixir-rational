@@ -2,21 +2,51 @@
 defmodule Rational do
   import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
 
-  # TODO: Add an option to not import inline operators.
-  defmacro __using__(opts) do
+  @inline_math_functions [*: 2, /: 2]
+  @overridden_math_functions [div: 2, abs: 1] ++ @inline_math_functions
+  @inline_operator [<|>: 2]
+
+  # Does not import any overridden math functions
+  defmacro __using__(without_overridden_math: true) do
     quote do
-        import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
-        import Rational, except: [to_float: 1]
-      
-      # if unquote(opts[:without_inline_math]) do
-      #   import Kernel, except: [div: 2, abs: 1]
-      #   import Rational, except: [to_float: 1, abs: 1]
-      # else
-      #   import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
-      #   import Rational, except: [to_float: 1]
-      # end
+      import Rational, except: unquote([to_float: 1] ++ @overridden_math_functions)
     end
   end
+
+  # Does not import the overridden inline math *, /, functions:
+  defmacro __using__(without_inline_math: true) do
+    quote do
+      import Rational, except: unquote([to_float: 1] ++ @inline_math_functions)
+    end
+  end
+
+  defmacro __using__(_) do
+    quote do
+      import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
+      import Rational, except: [to_float: 1]
+    end
+  end
+
+        #import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
+        #import Rational, except: [to_float: 1]
+  #       unquote(IO.puts "OPTIONS:#{opts[:without_inline_math]}")
+
+  #       if unquote(opts)[:without_inline_math] == true do
+  #       else
+  #         import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
+  #         import Rational, except: [to_float: 1]
+  #       end
+
+
+  #     # if unquote(opts[:without_inline_math]) do
+  #     #   import Kernel, except: [div: 2, abs: 1]
+  #     #   import Rational, except: [to_float: 1, abs: 1]
+  #     # else
+  #     #   import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
+  #     #   import Rational, except: [to_float: 1]
+  #     # end
+  #   end
+  # end
 
 
   @doc """
@@ -184,7 +214,7 @@ defmodule Rational do
       1 <|> 4
   """
   def div(a, b)
-  
+
   def div(a, b) when is_number(a) and is_integer(b), do: a <|> b
 
   def div(%Rational{numerator: numerator, denominator: denominator}, number) when is_number(number) do
