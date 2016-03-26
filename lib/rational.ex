@@ -3,12 +3,12 @@
 defmodule Rational do
 
 
-  @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
+  @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1, >: 2, >=: 2, <: 2, <=: 2]
   @overridden_math_functions [div: 2, abs: 1] ++ @inline_math_functions
   @rational_operator [<|>: 2]
 
 
-  import Kernel, except: [div: 2, *: 2, /: 2, abs: 1, -: 2, -: 1, +: 2, +: 1]
+  import Kernel, except: @overridden_math_functions#[div: 2, *: 2, /: 2, abs: 1, -: 2, -: 1, +: 2, +: 1]
 
   # TODO: Add option to not load the operator.
 
@@ -201,7 +201,9 @@ defmodule Rational do
   def denominator(%Rational{denominator: denominator}), do: denominator
 
 
-
+  @doc """
+  Longhand for Rational.+/2
+  """
   def add(a, b)
 
   def add(a, b) when is_integer(a) and is_integer(b), do: Kernel.+(a, b)
@@ -218,13 +220,49 @@ defmodule Rational do
     Kernel.+((a * d), (c * b)) <|> (b * d)  
   end
   
+
+  @doc """
+  Adds two numbers, one or both of which might be integers, floats or rationals.
+
+  The result is converted to a rational if applicable.
+
+  ## Examples
+
+      iex> 2 + 3
+      5
+      iex> 2.3 + 0.3
+      13 <|> 5
+  """
   def a + b when is_integer(a) and is_integer(b), do: Kernel.+(a, b)
   def a + b, do: add(a, b)
   
+  @doc """
+  Longhand for Rational.-/2
+  """
+  def sub(a, b) when is_integer(a) and is_integer(b), do: Kernel.-(a, b)
+  def sub(a, b), do: add(a, negate(b))
+
+  @doc """
+  Subtracts *b* from *a*. One or both might be integers, floats or rationals.
+
+  The result is converted to a rational if applicable.
+
+  ## Examples
+
+      iex> 2 - 3
+      -1
+      iex> 2.3 - 0.3
+      2
+      iex> 2.3 - 0.1
+      11 <|> 5
+      iex> (2 <|> 3) - (1 <|> 5)
+  """
   def a - b when is_integer(a) and is_integer(b), do: Kernel.-(a, b)
   def a - b, do: add(a, negate(b))
 
-
+  @doc """
+  Longhand for `Rational.-/1`
+  """
   def negate(num) 
   
   def negate(num) when is_integer(num), do: Kernel.-(num)
@@ -236,13 +274,33 @@ defmodule Rational do
   end
 
 
+  @doc """
+  Unary minus. Inverts the sign of the given *num*, which might be an integer, float or rational.
+  Floats are converted to Rationals before inverting the sign.
 
+
+  ## Examples
+
+      iex> -10
+      -10
+      iex> -10.0
+      -10
+      iex> -10.1
+      -101 <|> 10
+      iex> -(5 <|> 3)
+      -5 <|> 3
+      iex> -123.456
+      -15432 <|> 125
+  """
   def (-num) when is_integer(num), do: Kernel.-(num)
   
   def (-num), do: negate(num)
 
 
-
+  @doc """
+  Unary plus. Returns *num*.
+  Coerces the number to a rational if it is a float.
+  """
   def (+num) when is_integer(num), do: Kernel.+(num)
   def (+num) when is_float(num), do: Rational.FloatConversion.float_to_rational(num)
   def (+num), do: num
@@ -250,12 +308,7 @@ defmodule Rational do
 
 
   @doc """
-  Multiplies two numbers. (one or both of which might integers, floats or rationals)
-  
-      iex> mul(2 <|> 3, 10)
-      20 <|> 3
-      iex> mul( 1 <|> 3, 1 <|> 2)
-      1 <|> 6
+  Longhand for Rational.*/2
   """
   def mul(number1, number2)
   def mul(number1, number2) when is_number(number1) and is_number(number2), do: Kernel.*(number1, number2)
@@ -276,6 +329,12 @@ defmodule Rational do
   @doc """
   Multiplies two numbers. (one or both of which might be integers, floats or rationals)
 
+  ## Examples
+
+      iex> (2 <|> 3) *  10)
+      20 <|> 3
+      iex> ( 1 <|> 3) * (1 <|> 2)
+      1 <|> 6
   """
   def a * b
 
@@ -284,16 +343,8 @@ defmodule Rational do
   def a * b, do: mul(a, b)
 
   @doc """
-  Divides a number by another number (one or both of which might be integers, floats or rationals)
+  Longhand for Rational.//2
 
-  The function will return integers whenever possible, and otherwise returns a rational number.
-
-  ## Examples
-
-      iex> Rational.div(1 <|> 3, 2)
-      1 <|> 6
-      iex> Rational.div( 2 <|> 3, 8 <|> 3)
-      1 <|> 4
   """
   def div(a, b)
 
@@ -314,17 +365,98 @@ defmodule Rational do
   end
 
   @doc """
-  Divides a number by another number, (one or both of which might be integers, floats or rationals).
+  Divides a number by another number, one or both of which might be integers, floats or rationals.
 
   The function will return integers whenever possible, and otherwise returns a rational number.
+
+  ## Examples
+
+      iex> Rational.div(1 <|> 3, 2)
+      1 <|> 6
+      iex> Rational.div( 2 <|> 3, 8 <|> 3)
+      1 <|> 4
+
   """
   def a / b
-
-  # Do not modify Kernel float-division behaviour.
-  # def a / b when is_float(b) or is_float(a), do:  Kernel./(a, b)
   
   def a / b when is_number(a) and is_integer(b), do:  a <|> b
+
   def a / b, do: div(a, b)
+
+
+  @doc """
+  Compares the numbers *a* and *b*. (one or both of which might be rationals)
+
+  Returns:
+
+  - `-1` if *a* is smaller
+  -  `0` if the numbers are the same size
+  - `1` if *a* is bigger.
+
+
+  """
+  def compare(a, b), when is_number(a) and is_number(b) and a > b do: 1
+  def compare(a, b), when is_number(a) and is_number(b) and a == b do: 0
+  def compare(a, b), when is_number(a) and is_number(b) and a < b do: Kernel.-(1)
+
+  def compare(a, b=%Rational{}), when is_number(a) do
+    Kernel.-(compare(b, a))
+  end
+
+  # Multiply both sides by the denominator:
+  # (3 <|> 2) < 2 == 3 < (2*2)
+  def compare(%Rational{numerator: numerator, denominator: denominator}, b), when is_number(b) do
+    compare(numerator, Kernel.*(b, denominator)
+  end
+
+  def compare(%Rational{numerator: a, denominator: b}, %Rational{numerator: c, denominator: d}) do
+    compare(Kernel.*(a,d), Kernel.*(b,c))
+  end
+
+  @doc """
+  Returns true if *a* is larger than *b*
+  """
+  def a > b
+  def (a=%Rational{}) > (b=%Rational{}), do: compare(a, b) == 1
+  def a > b, do: Kernel.>(a, b)
+  @doc """
+  Returns true if *a* is larger than or equal to *b*
+  """
+  def a >= b
+  def (a=%Rational{}) >= (b=%Rational{}), do: compare(a, b) >= 0
+  def a >= b, do: Kernel.>=(a, b)
+  @doc """
+  Returns true if *a* is smaller than *b*
+  """
+  def a < b
+  def (a=%Rational{}) < (b=%Rational{}), do: compare(a, b) == -1
+  def a < b, do: Kernel.<(a, b)
+  @doc """
+  Returns true if *a* is smaller than or equal to *b*
+  """
+  def a <= b
+  def (a=%Rational{}) <= (b=%Rational{}), do: compare(a, b) <= 0
+  def a <= b, do: Kernel.<=(a, b)
+
+  @doc """
+  Longhand for Rational.>(a, b)
+  """
+  def gt?(a, b), do: a > b
+  @doc """
+  Longhand for Rational.<(a, b)
+  """
+
+  def lt?(a, b), do: a < b
+  @doc """
+  Longhand for Rational.>=(a, b)
+  """
+  def gte?(a, b), do: a >= b
+  @doc """
+  Longhand for Rational.<=(a, b)
+  """
+  def lte?(a, b), do: a <= b
+
+
 
 
   @doc """
@@ -377,6 +509,36 @@ defmodule Rational do
 
 
   @doc """
+  Check if a number is a rational number.
+  Returns false if the number is an integer, float or any other type.
+
+  To check if a float representation will result in a rational number, combine it with the unary plus operation:
+  
+  ## Examples
+
+      iex>Rational.is_rational?(10)
+      false
+      iex>Rational.is_rational?("foo")
+      false
+      iex>Rational.is_rational?(10.0)
+      false
+      iex>Rational.is_rational?(10.234)
+      false
+      iex>Rational.is_rational?(10 <|> 3)
+      true
+      iex>Rational.is_rational?(10 <|> 5)
+      false
+      iex>Rational.is_rational?(+20.234)
+      true
+      iex>Rational.is_rational?(+20.0)
+      false
+
+  """
+  def is_rational?(%Rational{}), do: true
+  def is_rational?(_), do: false
+
+
+  @doc """
   Returns a binstring representation of the Rational number.
   If the denominator is `1`, it will be printed as a normal (integer) number.
 
@@ -407,6 +569,7 @@ defmodule Rational do
 
 
   # Simplifies the Rational to its most basic form.
+  # Which might result in an integer.
   # Ensures that a `-` is only kept in the numerator.
   defp simplify(rational)
 
