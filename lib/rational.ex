@@ -23,7 +23,7 @@ defmodule Rational do
   A Rational number is defined as a numerator and a denominator.
   Both the numerator and the denominator are integers.
   """
-  defstruct numerator: 1, denominator: 1
+  defstruct numerator: 0, denominator: 1
   @type t :: %Rational{numerator: integer(), denominator: pos_integer()}
 
   @doc """
@@ -31,10 +31,16 @@ defmodule Rational do
   This number is simplified to the most basic form automatically.
   If the most basic form has the format `_ <|> 1`, it is returned in integer form.
 
-  Note that it is recommended to use integer numbers for the numerator and the denominator.
-  Floats will be rounded to the nearest integer.
-
   Rational numbers with a `0` as denominator are not allowed.
+
+  Note that it is recommended to use integer numbers for the numerator and the denominator.
+
+  Using Floats for the numerator or denominator is possible, however, because base-2 floats cannot represent all base-10 fractions properly, the results might be different from what you might expect.
+  See [The Perils of Floating Point](http://www.lahey.com/float.htm) for more information about this.
+
+  See Rational.FloatConversion.float_to_rational/2 for more info about float -> rational parsing.
+  Passed floats are rounded to `#{Application.get_env(:rational, :max_float_to_rational_digits)}` digits, to make the result match expectations better.
+  This number can be changed by adding `max_float_to_rational_digits: 10` to your config file.
 
   ## Examples
 
@@ -43,7 +49,7 @@ defmodule Rational do
       iex> 100 <|> 300
       1 <|> 3
       iex> 1.5 <|> 4
-      1 <|> 2
+      3 <|> 8
   """
   def numerator <|> denominator
 
@@ -57,9 +63,19 @@ defmodule Rational do
     |> remove_denominator_if_integer
   end
 
-  def numerator <|> denominator when is_float(numerator) or is_float(denominator) do
-    round(numerator) <|> round(denominator)
+  def numerator <|> denominator when is_float(numerator) do
+    div(Rational.FloatConversion.float_to_rational(numerator), denominator)
   end
+
+  def numerator <|> denominator when is_float(denominator) do
+    div(numerator, Rational.FloatConversion.float_to_rational(denominator))
+  end
+
+  def (numerator=%Rational{}) <|> (denominator=%Rational{}) do
+    div(numerator, denominator)
+  end
+
+
 
   @doc """
   Prefix-version of `numerator <|> denominator`.
@@ -110,11 +126,7 @@ defmodule Rational do
   def denominator(number) when is_number(number), do: 1
   def denominator(%Rational{denominator: denominator}), do: denominator
 
-
-  def to_float(number) when is_integer(number), do: Integer.to_float(number)
-  def to_float(number) when is_float(number), do: number
-  def to_float(%Rational{numerator: numerator, denominator: denominator}), do: Kernel./(numerator, denominator)
-
+  
 
   @doc """
   Multiplies two numbers. (one or both of which might be Rationals)
@@ -191,7 +203,7 @@ defmodule Rational do
   def a / b
 
   # Do not modify Kernel float-division behaviour.
-  def a / b when is_float(b) and is_number(a), do:  Kernel./(a, b)
+  def a / b when is_float(b) or is_float(a), do:  Kernel./(a, b)
   
   def a / b when is_number(a) and is_integer(b), do:  a <|> b
   def a / b, do: div(a, b)
@@ -211,7 +223,7 @@ defmodule Rational do
       iex>pow(2, -4)
       1 <|> 16
       iex>pow(3 <|> 2, 10)
-      6561 <|> 256
+      59049 <|> 1024
   """
   @spec pow(number()|Rational.t(), pos_integer()) :: number() | Rational.t()
   def pow(x, n)
@@ -224,13 +236,19 @@ defmodule Rational do
 
   # Exponentiation By Squaring.
   defp _pow(x, n, y \\ 1)
-  defp _pow(x, 0, y), do: y
+  defp _pow(_x, 0, y), do: y
   defp _pow(x, 1, y), do: x * y
   defp _pow(x, n, y) when n < 0, do: _pow(1 / x, -n, y)
   defp _pow(x, n, y) when rem(n, 2) == 0, do: _pow(x * x, div(n, 2), y)
-  defp _pow(x, n, y), do: _pow(x * x, div((n - 1), 2), y * y)
+  defp _pow(x, n, y), do: _pow(x * x, div((n - 1), 2), x * y)
     
 
+
+  @doc """
+  Converts the given *number* to a Float. As floats do not have arbitrary precision, this operation is generally not reversible.
+  """
+  def to_float(%Rational{numerator: numerator, denominator: denominator}), do: Kernel./(numerator, denominator)
+  def to_float(number), do: :erlang.float(number)
 
 
 
@@ -278,7 +296,7 @@ defmodule Rational do
     end
 
     if new_denominator == 1 do
-      numerator
+      Kernel.div(numerator, gcdiv)
     else
       %Rational{numerator: Kernel.div(numerator, gcdiv), denominator: new_denominator}
     end

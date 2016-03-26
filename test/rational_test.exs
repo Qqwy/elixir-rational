@@ -2,9 +2,10 @@ defmodule RationalTest do
   use ExUnit.Case
   import Rational
   doctest Rational
+  doctest Rational.FloatConversion
 
   test "definition of <|> operator" do
-    assert 1 <|> 2 == %Rational{numerator: 1, denominator: 3}
+    assert 1 <|> 3 == %Rational{numerator: 1, denominator: 3}
   end
 
   test "reject _ <|> 0" do

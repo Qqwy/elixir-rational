@@ -7,7 +7,8 @@ defmodule Rational.Mixfile do
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     deps: deps
+   ]
   end
 
   # Configuration for the OTP application
@@ -29,4 +30,8 @@ defmodule Rational.Mixfile do
   defp deps do
     []
   end
+
+  Application.put_env(:rational, :max_float_to_rational_digits, 10)
+
+
 end
