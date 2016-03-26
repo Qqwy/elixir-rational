@@ -35,12 +35,19 @@ defmodule Rational do
 
   Note that it is recommended to use integer numbers for the numerator and the denominator.
 
+  ## Floats
+
+  Tl;Dr: *If possible, don't use them.*
+
   Using Floats for the numerator or denominator is possible, however, because base-2 floats cannot represent all base-10 fractions properly, the results might be different from what you might expect.
   See [The Perils of Floating Point](http://www.lahey.com/float.htm) for more information about this.
 
-  See Rational.FloatConversion.float_to_rational/2 for more info about float -> rational parsing.
   Passed floats are rounded to `#{Application.get_env(:rational, :max_float_to_rational_digits)}` digits, to make the result match expectations better.
   This number can be changed by adding `max_float_to_rational_digits: 10` to your config file.
+
+  See Rational.FloatConversion.float_to_rational/2 for more info about float -> rational parsing.
+
+  As Float-parsing is done by converting floats to a digit-list representation first, this is also far slower than when using integers or rationals.
 
   ## Examples
 
@@ -86,7 +93,7 @@ defmodule Rational do
 
 
   @doc """
-  Returns the absolute version of the given number or Rational.
+  Returns the absolute version of the given number (which might be an integer, float or Rational).
 
   ## Examples
 
@@ -97,7 +104,7 @@ defmodule Rational do
   def abs(%Rational{numerator: numerator, denominator: denominator}), do: Kernel.abs(numerator) <|> denominator
 
   @doc """
-  Returns the sign of the number Rational
+  Returns the sign of the given number (which might be an integer, float or Rational)
  
   This is:
   
@@ -113,15 +120,17 @@ defmodule Rational do
   def sign(number) when is_number(number), do: 0
 
   @doc """
-  Treats the passed *number* as a Rational number, and extracts its denominator.
-  For integers (and floats!) returns the passed number itself.
+  Converts the passed *number* as a Rational number, and extracts its denominator.
+  For integers returns the passed number itself.
+
   """
-  def numerator(number) when is_number(number), do: number
+  def numerator(number) when is_integer(number), do: number
+  def numerator(number) when is_float(number), do: numerator(Rational.FloatConversion.float_to_rational(number))
   def numerator(%Rational{numerator: numerator}), do: numerator
 
   @doc """
   Treats the passed *number* as a Rational number, and extracts its denominator.
-  For integers (and floats!) returns `1`.
+  For integers, returns `1`.
   """
   def denominator(number) when is_number(number), do: 1
   def denominator(%Rational{denominator: denominator}), do: denominator
@@ -129,14 +138,15 @@ defmodule Rational do
   
 
   @doc """
-  Multiplies two numbers. (one or both of which might be Rationals)
+  Multiplies two numbers. (one or both of which might integers, floats or rationals)
   
-      iex> Rational.mul(2 <|> 3, 10)
+      iex> mul(2 <|> 3, 10)
       20 <|> 3
-      iex> Rational.mul( 1 <|> 3, 1 <|> 2)
+      iex> mul( 1 <|> 3, 1 <|> 2)
       1 <|> 6
   """
-  def mul(rational, number_or_rational)
+  def mul(number1, number2)
+  def mul(number1, number2) when is_number(number1) and is_number(number2), do: Kernel.*(number1, number2)
 
   def mul(%Rational{numerator: numerator, denominator: denominator}, number) when is_number(number) do
     Kernel.*(numerator, number) <|> (denominator)
@@ -152,7 +162,7 @@ defmodule Rational do
   end
 
   @doc """
-  Multiplies two numbers. (one or both of which might be Rationals)
+  Multiplies two numbers. (one or both of which might be integers, floats or rationals)
 
   """
   def a * b
@@ -162,13 +172,10 @@ defmodule Rational do
   def a * b, do: mul(a, b)
 
   @doc """
-  Divides a Rational by a number (which might be another Rational)
+  Divides a number by another number (one or both of which might be integers, floats or rationals)
 
-  Dividing a number by a float returns a float.
-  Dividing a number by an integer returns a Rational.
-  Dividing a number by a Rational also returns a Rational.
+  The function will return integers whenever possible, and otherwise returns a rational number.
 
-  
   ## Examples
 
       iex> Rational.div(1 <|> 3, 2)
@@ -177,7 +184,8 @@ defmodule Rational do
       1 <|> 4
   """
   def div(a, b)
-  def div(a, b) when is_number(a) and is_number(b), do: Kernel.div(a, b)
+  
+  def div(a, b) when is_number(a) and is_integer(b), do: a <|> b
 
   def div(%Rational{numerator: numerator, denominator: denominator}, number) when is_number(number) do
     numerator <|> Kernel.*(denominator, number)
@@ -194,27 +202,28 @@ defmodule Rational do
   end
 
   @doc """
-  Divides a number by another number.
+  Divides a number by another number, (one or both of which might be integers, floats or rationals).
 
-  Dividing a number by a float returns a float.
-  Dividing a number by an integer returns a Rational.
-  Dividing a number by a Rational also returns a Rational.
+  The function will return integers whenever possible, and otherwise returns a rational number.
   """
   def a / b
 
   # Do not modify Kernel float-division behaviour.
-  def a / b when is_float(b) or is_float(a), do:  Kernel./(a, b)
+  # def a / b when is_float(b) or is_float(a), do:  Kernel./(a, b)
   
   def a / b when is_number(a) and is_integer(b), do:  a <|> b
   def a / b, do: div(a, b)
 
 
   @doc """
-  Power function.
+  returns *x* to the *n* th power.
+
+  *x* is allowed to be an integer, rational or float (in the last case, this is first converted to a rational).
+
   Will give the answer as a rational number when applicable.
   Note that the exponent *n* is only allowed to be an integer.
 
-  (so no squareroot-cheating using `pow(2, 0.5)` or `pow(2, 1 <|> 2)`)
+  (so it is not possible to compute roots using this function.)
 
   ## Examples
 
@@ -227,6 +236,9 @@ defmodule Rational do
   """
   @spec pow(number()|Rational.t(), pos_integer()) :: number() | Rational.t()
   def pow(x, n)
+
+  #Convert Float to Rational.
+  def pow(x, n) when is_float(x), do: pow(Rational.FloatConversion.float_to_rational(x), n)
 
   # Small powers
   def pow(x, 1), do: x
@@ -249,7 +261,6 @@ defmodule Rational do
   """
   def to_float(%Rational{numerator: numerator, denominator: denominator}), do: Kernel./(numerator, denominator)
   def to_float(number), do: :erlang.float(number)
-
 
 
 
