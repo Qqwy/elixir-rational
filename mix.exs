@@ -28,7 +28,9 @@ defmodule Rational.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      { :decimal, "~> 1.1.0" }
+    ]
   end
 
   Application.put_env(:rational, :max_float_to_rational_digits, 10)

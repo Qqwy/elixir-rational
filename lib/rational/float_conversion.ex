@@ -31,7 +31,7 @@ defmodule Rational.FloatConversion do
   end
 
   # Changes 1.234 to {'1', '234'}
-  defp float_to_intdec_tuple(float, max_decimals \\ @max_decimals) do
+  defp float_to_intdec_tuple(float, max_decimals) do
     # While the `:decimals` option is allowed to be 0..249 according to the Erlang documentation,
     # it will throw errors on large numbers if you do.
     {integer_list, [?. | decimal_list]} = :erlang.float_to_list(float, [{:decimals, max_decimals}, :compact])

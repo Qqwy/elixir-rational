@@ -1,10 +1,41 @@
 # TODO: add @specs.
+# TODO: >, <, >=, <=
 defmodule Rational do
-  import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
 
-  @inline_math_functions [*: 2, /: 2]
+
+  @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
   @overridden_math_functions [div: 2, abs: 1] ++ @inline_math_functions
-  @inline_operator [<|>: 2]
+  @rational_operator [<|>: 2]
+
+
+  import Kernel, except: [div: 2, *: 2, /: 2, abs: 1, -: 2, -: 1, +: 2, +: 1]
+
+  # TODO: Add option to not load the operator.
+
+  # defmacro __using__(options) do
+
+  #   restricted_functions = [to_float: 1]
+  #   overridden_kernel_functions = []
+  #   if Keyword.fetch(options, :without_overridden_math) == true do
+  #     restricted_functions = restricted_functions ++ @overridden_math_functions
+  #   else
+  #     if Keyword.fetch(options, :without_inline_math) == true do
+  #       restricted_functions = restricted_functions ++ @inline_math_functions
+  #       overridden_kernel_functions = @inline_math_functions
+  #     else
+  #       overridden_kernel_functions = @overridden_math_functions
+  #     end
+  #   end
+
+  #   if Keyword.fetch(options, :without_operator) == true do
+  #     restricted_functions = restricted_functions ++ @rational_operator
+  #   end
+  #   quote do
+  #     import Kernel, except: unquote(overridden_kernel_functions)
+  #     import Rational, except: unquote(restricted_functions)
+  #   end
+
+  # end
 
   # Does not import any overridden math functions
   defmacro __using__(without_overridden_math: true) do
@@ -22,7 +53,7 @@ defmodule Rational do
 
   defmacro __using__(_) do
     quote do
-      import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
+      import Kernel, except: unquote(@overridden_math_functions)
       import Rational, except: [to_float: 1]
     end
   end
@@ -112,6 +143,10 @@ defmodule Rational do
     div(numerator, denominator)
   end
 
+  def numerator <|> denominator do
+    div(numerator, denominator)
+  end
+
 
 
   @doc """
@@ -144,9 +179,9 @@ defmodule Rational do
 
   """
   def sign(%Rational{numerator: numerator}) when numerator > 0, do: 1
-  def sign(%Rational{numerator: numerator}) when numerator < 0, do: -1
+  def sign(%Rational{numerator: numerator}) when numerator < 0, do: Kernel.-(1)
   def sign(number) when is_number(number) and number > 0, do: 1
-  def sign(number) when is_number(number) and number < 0, do: -1
+  def sign(number) when is_number(number) and number < 0, do: Kernel.-(1)
   def sign(number) when is_number(number), do: 0
 
   @doc """
@@ -165,7 +200,54 @@ defmodule Rational do
   def denominator(number) when is_number(number), do: 1
   def denominator(%Rational{denominator: denominator}), do: denominator
 
+
+
+  def add(a, b)
+
+  def add(a, b) when is_integer(a) and is_integer(b), do: Kernel.+(a, b)
   
+  def add(a, b) when is_float(a), do: add(Rational.FloatConversion.float_to_rational(a), b) 
+  
+  def add(a, b) when is_float(b), do: add(a, Rational.FloatConversion.float_to_rational(b)) 
+
+  def add(%Rational{numerator: a, denominator: lcm}, %Rational{numerator: c, denominator: lcm}) do
+    Kernel.+(a, c) <|> lcm
+  end
+  
+  def add(%Rational{numerator: a, denominator: b}, %Rational{numerator: c, denominator: d}) do
+    Kernel.+((a * d), (c * b)) <|> (b * d)  
+  end
+  
+  def a + b when is_integer(a) and is_integer(b), do: Kernel.+(a, b)
+  def a + b, do: add(a, b)
+  
+  def a - b when is_integer(a) and is_integer(b), do: Kernel.-(a, b)
+  def a - b, do: add(a, negate(b))
+
+
+  def negate(num) 
+  
+  def negate(num) when is_integer(num), do: Kernel.-(num)
+  
+  def negate(num) when is_float(num), do: negate(Rational.FloatConversion.float_to_rational(num))
+
+  def negate(%Rational{numerator: numerator, denominator: denominator}) do
+    %Rational{numerator: Kernel.-(numerator), denominator: denominator}
+  end
+
+
+
+  def (-num) when is_integer(num), do: Kernel.-(num)
+  
+  def (-num), do: negate(num)
+
+
+
+  def (+num) when is_integer(num), do: Kernel.+(num)
+  def (+num) when is_float(num), do: Rational.FloatConversion.float_to_rational(num)
+  def (+num), do: num
+
+
 
   @doc """
   Multiplies two numbers. (one or both of which might integers, floats or rationals)
@@ -280,7 +362,7 @@ defmodule Rational do
   defp _pow(x, n, y \\ 1)
   defp _pow(_x, 0, y), do: y
   defp _pow(x, 1, y), do: x * y
-  defp _pow(x, n, y) when n < 0, do: _pow(1 / x, -n, y)
+  defp _pow(x, n, y) when n < 0, do: _pow(1 / x, Kernel.-(n), y)
   defp _pow(x, n, y) when rem(n, 2) == 0, do: _pow(x * x, div(n, 2), y)
   defp _pow(x, n, y), do: _pow(x * x, div((n - 1), 2), x * y)
     
@@ -332,8 +414,8 @@ defmodule Rational do
     gcdiv = gcd(numerator, denominator)
     new_denominator = Kernel.div(denominator, gcdiv)
     if new_denominator < 0 do
-      new_denominator = -new_denominator
-      numerator = -numerator
+      new_denominator = Kernel.-(new_denominator)
+      numerator = Kernel.-(numerator)
     end
 
     if new_denominator == 1 do
@@ -356,13 +438,16 @@ defmodule Rational do
   defp gcd(a, b), do: gcd(b, Kernel.rem(a,b))
 
   # Calculates the Least Common Multiple of two numbers.
-  defp lcm(a, b)
+  # Unused right now
+  defp _lcm(a, b)
 
-  defp lcm(0, 0), do: 0
-  defp lcm(a, b) do
+  defp _lcm(0, 0), do: 0
+  defp _lcm(a, b) do
     Kernel.div(Kernel.*(a, b), gcd(a, b))
   end
 
+
+  defoverridable @overridden_math_functions # So they can without problem be overridden by other libraries that extend on this one. 
 end
 
 
