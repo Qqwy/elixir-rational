@@ -3,10 +3,18 @@ defmodule Rational do
   import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
 
   # TODO: Add an option to not import inline operators.
-  defmacro __using__(_opts) do
+  defmacro __using__(opts) do
     quote do
-      import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
-      import Rational
+        import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
+        import Rational, except: [to_float: 1]
+      
+      # if unquote(opts[:without_inline_math]) do
+      #   import Kernel, except: [div: 2, abs: 1]
+      #   import Rational, except: [to_float: 1, abs: 1]
+      # else
+      #   import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
+      #   import Rational, except: [to_float: 1]
+      # end
     end
   end
 
@@ -88,6 +96,24 @@ defmodule Rational do
   def sign(number) when is_number(number) and number < 0, do: -1
   def sign(number) when is_number(number), do: 0
 
+  @doc """
+  Treats the passed *number* as a Rational number, and extracts its denominator.
+  For integers (and floats!) returns the passed number itself.
+  """
+  def numerator(number) when is_number(number), do: number
+  def numerator(%Rational{numerator: numerator}), do: numerator
+
+  @doc """
+  Treats the passed *number* as a Rational number, and extracts its denominator.
+  For integers (and floats!) returns `1`.
+  """
+  def denominator(number) when is_number(number), do: 1
+  def denominator(%Rational{denominator: denominator}), do: denominator
+
+
+  def to_float(number) when is_integer(number), do: Integer.to_float(number)
+  def to_float(number) when is_float(number), do: number
+  def to_float(%Rational{numerator: numerator, denominator: denominator}), do: Kernel./(numerator, denominator)
 
 
   @doc """
@@ -164,11 +190,47 @@ defmodule Rational do
   """
   def a / b
 
-  # Do not modify float-division behaviour.
+  # Do not modify Kernel float-division behaviour.
   def a / b when is_float(b) and is_number(a), do:  Kernel./(a, b)
   
   def a / b when is_number(a) and is_integer(b), do:  a <|> b
   def a / b, do: div(a, b)
+
+
+  @doc """
+  Power function.
+  Will give the answer as a rational number when applicable.
+  Note that the exponent *n* is only allowed to be an integer.
+
+  (so no squareroot-cheating using `pow(2, 0.5)` or `pow(2, 1 <|> 2)`)
+
+  ## Examples
+
+      iex>pow(2, 4)
+      16
+      iex>pow(2, -4)
+      1 <|> 16
+      iex>pow(3 <|> 2, 10)
+      6561 <|> 256
+  """
+  @spec pow(number()|Rational.t(), pos_integer()) :: number() | Rational.t()
+  def pow(x, n)
+
+  # Small powers
+  def pow(x, 1), do: x
+  def pow(x, 2), do: x * x
+  def pow(x, 3), do: x * x * x
+  def pow(x, n) when is_integer(n), do: _pow(x, n)
+
+  # Exponentiation By Squaring.
+  defp _pow(x, n, y \\ 1)
+  defp _pow(x, 0, y), do: y
+  defp _pow(x, 1, y), do: x * y
+  defp _pow(x, n, y) when n < 0, do: _pow(1 / x, -n, y)
+  defp _pow(x, n, y) when rem(n, 2) == 0, do: _pow(x * x, div(n, 2), y)
+  defp _pow(x, n, y), do: _pow(x * x, div((n - 1), 2), y * y)
+    
+
 
 
 
@@ -204,11 +266,17 @@ defmodule Rational do
 
 
   # Simplifies the Rational to its most basic form.
+  # Ensures that a `-` is only kept in the numerator.
   defp simplify(rational)
 
   defp simplify(%Rational{numerator: numerator, denominator: denominator}) do
     gcdiv = gcd(numerator, denominator)
     new_denominator = Kernel.div(denominator, gcdiv)
+    if new_denominator < 0 do
+      new_denominator = -new_denominator
+      numerator = -numerator
+    end
+
     if new_denominator == 1 do
       numerator
     else

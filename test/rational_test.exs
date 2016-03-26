@@ -4,7 +4,7 @@ defmodule RationalTest do
   doctest Rational
 
   test "definition of <|> operator" do
-    assert 1 <|> 2 == %Rational{dividend: 1, divisor: 2}
+    assert 1 <|> 2 == %Rational{numerator: 1, denominator: 3}
   end
 
   test "reject _ <|> 0" do
