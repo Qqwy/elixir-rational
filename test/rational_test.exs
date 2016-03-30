@@ -1,6 +1,6 @@
 defmodule RationalTest do
   use ExUnit.Case, async: true
-  import Rational
+  use Rational
   doctest Rational
   doctest Rational.FloatConversion
 

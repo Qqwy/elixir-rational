@@ -216,6 +216,7 @@ defmodule Rational do
       iex> 2.3 - 0.1
       11 <|> 5
       iex> (2 <|> 3) - (1 <|> 5)
+      7 <|> 15
   """
   def a - b when is_integer(a) and is_integer(b), do: Kernel.-(a, b)
   def a - b, do: add(a, negate(b))
@@ -291,7 +292,7 @@ defmodule Rational do
 
   ## Examples
 
-      iex> (2 <|> 3) *  10)
+      iex> ((2 <|> 3) *  10)
       20 <|> 3
       iex> ( 1 <|> 3) * (1 <|> 2)
       1 <|> 6
@@ -370,15 +371,6 @@ defmodule Rational do
       a == b -> 0
       true  ->  raise ComparisonError, "These things cannot be compared: #{a} , #{b}"
     end
-  end
-
-  @doc """
-  Returns true if *a* is larger than *b*
-  """
-  defmacro a > b do
-    quote do
-      compare(unquote(a), unquote(b)) == 1
-    end  
   end
 
   @doc """
