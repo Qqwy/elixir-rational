@@ -1,7 +1,7 @@
 # TODO: add @specs.
 # TODO: >, <, >=, <=
 defmodule Ratio do
-  @vsn "0.6"
+  @vsn "0.6.1"
 
 
   @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
@@ -351,15 +351,15 @@ defmodule Ratio do
   end
 
   def compare(%Ratio{numerator: a, denominator: b}, %Ratio{numerator: c, denominator: d}) do
-      compare(Kernel.*(a, d), Kernel.*(b, c))
+    compare(Kernel.*(a, d), Kernel.*(b, c))
   end
 
   def compare(%Ratio{numerator: numerator, denominator: denominator}, b) do
-      compare(numerator, Kernel.*(b, denominator))
+    compare(numerator, Kernel.*(b, denominator))
   end
 
   def compare(a, %Ratio{numerator: numerator, denominator: denominator}) do
-      compare(Kernel.*(a, denominator), numerator)
+    compare(Kernel.*(a, denominator), numerator)
   end
 
 
@@ -422,15 +422,15 @@ defmodule Ratio do
   def pow(x, 1), do: x
   def pow(x, 2), do: x * x
   def pow(x, 3), do: x * x * x
-  def pow(x, n) when is_integer(n), do: _pow(x, n)
+  def pow(x, n) when is_integer(n), do: do_pow(x, n)
 
   # Exponentiation By Squaring.
-  defp _pow(x, n, y \\ 1)
-  defp _pow(_x, 0, y), do: y
-  defp _pow(x, 1, y), do: x * y
-  defp _pow(x, n, y) when Kernel.<(n, 0), do: _pow(1 / x, Kernel.-(n), y)
-  defp _pow(x, n, y) when rem(n, 2) == 0, do: _pow(x * x, div(n, 2), y)
-  defp _pow(x, n, y), do: _pow(x * x, div((n - 1), 2), x * y)
+  defp do_pow(x, n, y \\ 1)
+  defp do_pow(_x, 0, y), do: y
+  defp do_pow(x, 1, y), do: x * y
+  defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(1 / x, Kernel.-(n), y)
+  defp do_pow(x, n, y) when rem(n, 2) == 0, do: do_pow(x * x, div(n, 2), y)
+  defp do_pow(x, n, y), do: do_pow(x * x, div((n - 1), 2), x * y)
     
 
 
