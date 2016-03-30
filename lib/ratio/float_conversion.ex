@@ -1,8 +1,8 @@
-defmodule Rational.FloatConversion do
-  use Rational
+defmodule Ratio.FloatConversion do
+  use Ratio
 
-  @max_decimals Application.get_env(:rational, :max_float_to_rational_digits)
-  IO.puts Application.get_env(:rational, :max_float_to_rational_digits)
+  @max_decimals Application.get_env(:ratio, :max_float_to_rational_digits)
+  IO.puts Application.get_env(:ratio, :max_float_to_rational_digits)
 
   @doc """
   Converts a float to a rational number.
@@ -14,13 +14,13 @@ defmodule Rational.FloatConversion do
   
   ## Examples
 
-      iex> Rational.FloatConversion.float_to_rational(10.0)
+      iex> Ratio.FloatConversion.float_to_rational(10.0)
       10
-      iex> Rational.FloatConversion.float_to_rational(13.5)
+      iex> Ratio.FloatConversion.float_to_rational(13.5)
       27 <|> 2
-      iex> Rational.FloatConversion.float_to_rational(1.1, 100)
+      iex> Ratio.FloatConversion.float_to_rational(1.1, 100)
       2476979795053773 <|> 2251799813685248
-      iex> Rational.FloatConversion.float_to_rational(1.1, 3)
+      iex> Ratio.FloatConversion.float_to_rational(1.1, 3)
       11 <|> 10
 
 
@@ -42,12 +42,10 @@ defmodule Rational.FloatConversion do
   # Changes {'1', '234'} to (1234 <|> 1000)
   defp intdec_tuple_to_rational({integer_list, decimal_list}) do
     decimal_len = Enum.count(decimal_list)
-    numerator = Rational.pow(10, decimal_len)
+    numerator = Ratio.pow(10, decimal_len)
     integer = List.to_integer(integer_list)
     decimal = List.to_integer(decimal_list)
 
-
     ((integer * numerator) + decimal) <|> numerator
-
   end
 end

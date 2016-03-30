@@ -1,6 +1,6 @@
 # TODO: add @specs.
 # TODO: >, <, >=, <=
-defmodule Rational do
+defmodule Ratio do
   @vsn "0.6"
 
 
@@ -16,21 +16,21 @@ defmodule Rational do
   # Does not import any overridden math functions
   defmacro __using__(without_overridden_math: true) do
     quote do
-      import Rational, except: unquote([to_float: 1] ++ @overridden_math_functions)
+      import Ratio, except: unquote([to_float: 1] ++ @overridden_math_functions)
     end
   end
 
   # Does not import the overridden inline math *, /, functions:
   defmacro __using__(without_inline_math: true) do
     quote do
-      import Rational, except: unquote([to_float: 1] ++ @inline_math_functions)
+      import Ratio, except: unquote([to_float: 1] ++ @inline_math_functions)
     end
   end
 
   defmacro __using__(_) do
     quote do
       import Kernel, except: unquote(@overridden_math_functions)
-      import Rational, except: [to_float: 1]
+      import Ratio, except: [to_float: 1]
     end
   end
 
@@ -42,10 +42,10 @@ defmodule Rational do
 
   Note that *directly manipulating* the struct, however, is usually a bad idea, as then there are no validity checks, nor wil the rational be simplified.
 
-  Use `Rational.<|>/2` or `Rational.new/2` instead.
+  Use `Ratio.<|>/2` or `Ratio.new/2` instead.
   """
   defstruct numerator: 0, denominator: 1
-  @type t :: %Rational{numerator: integer(), denominator: pos_integer()}
+  @type t :: %Ratio{numerator: integer(), denominator: pos_integer()}
 
   @doc """
   Creates a new Rational number.
@@ -63,10 +63,10 @@ defmodule Rational do
   Using Floats for the numerator or denominator is possible, however, because base-2 floats cannot represent all base-10 fractions properly, the results might be different from what you might expect.
   See [The Perils of Floating Point](http://www.lahey.com/float.htm) for more information about this.
 
-  Passed floats are rounded to `#{Application.get_env(:rational, :max_float_to_rational_digits)}` digits, to make the result match expectations better.
+  Passed floats are rounded to `#{Application.get_env(:ratio, :max_float_to_rational_digits)}` digits, to make the result match expectations better.
   This number can be changed by adding `max_float_to_rational_digits: 10` to your config file.
 
-  See Rational.FloatConversion.float_to_rational/2 for more info about float -> rational parsing.
+  See `Ratio.FloatConversion.float_to_rational/2` for more info about float -> rational parsing.
 
   As Float-parsing is done by converting floats to a digit-list representation first, this is also far slower than when using integers or rationals.
 
@@ -86,20 +86,20 @@ defmodule Rational do
   end
 
   def numerator <|> denominator when is_integer(numerator) and is_integer(denominator) do 
-    %Rational{numerator: numerator, denominator: denominator}
+    %Ratio{numerator: numerator, denominator: denominator}
     |> simplify
     |> remove_denominator_if_integer
   end
 
   def numerator <|> denominator when is_float(numerator) do
-    div(Rational.FloatConversion.float_to_rational(numerator), denominator)
+    div(Ratio.FloatConversion.float_to_rational(numerator), denominator)
   end
 
   def numerator <|> denominator when is_float(denominator) do
-    div(numerator, Rational.FloatConversion.float_to_rational(denominator))
+    div(numerator, Ratio.FloatConversion.float_to_rational(denominator))
   end
 
-  def (numerator=%Rational{}) <|> (denominator=%Rational{}) do
+  def (numerator=%Ratio{}) <|> (denominator=%Ratio{}) do
     div(numerator, denominator)
   end
 
@@ -119,11 +119,11 @@ defmodule Rational do
 
   ## Examples
 
-      iex>Rational.abs(-5 <|> 2)
+      iex>Ratio.abs(-5 <|> 2)
       5 <|> 2
   """
   def abs(number) when is_number(number), do: Kernel.abs(number)
-  def abs(%Rational{numerator: numerator, denominator: denominator}), do: Kernel.abs(numerator) <|> denominator
+  def abs(%Ratio{numerator: numerator, denominator: denominator}), do: Kernel.abs(numerator) <|> denominator
 
   @doc """
   Returns the sign of the given number (which might be an integer, float or Rational)
@@ -135,8 +135,8 @@ defmodule Rational do
    - 0 if the number is zero.
 
   """
-  def sign(%Rational{numerator: numerator}) when Kernel.>(numerator, 0), do: 1
-  def sign(%Rational{numerator: numerator}) when Kernel.<(numerator, 0), do: Kernel.-(1)
+  def sign(%Ratio{numerator: numerator}) when Kernel.>(numerator, 0), do: 1
+  def sign(%Ratio{numerator: numerator}) when Kernel.<(numerator, 0), do: Kernel.-(1)
   def sign(number) when is_number(number) and Kernel.>(number, 0), do: 1
   def sign(number) when is_number(number) and Kernel.<(number, 0), do: Kernel.-(1)
   def sign(number) when is_number(number), do: 0
@@ -147,36 +147,36 @@ defmodule Rational do
 
   """
   def numerator(number) when is_integer(number), do: number
-  def numerator(number) when is_float(number), do: numerator(Rational.FloatConversion.float_to_rational(number))
-  def numerator(%Rational{numerator: numerator}), do: numerator
+  def numerator(number) when is_float(number), do: numerator(Ratio.FloatConversion.float_to_rational(number))
+  def numerator(%Ratio{numerator: numerator}), do: numerator
 
   @doc """
   Treats the passed *number* as a Rational number, and extracts its denominator.
   For integers, returns `1`.
   """
   def denominator(number) when is_number(number), do: 1
-  def denominator(%Rational{denominator: denominator}), do: denominator
+  def denominator(%Ratio{denominator: denominator}), do: denominator
 
 
   @doc """
-  Longhand for Rational.+/2
+  Longhand for `Ratio.+/2`
   """
   def add(a, b)
 
   def add(a, b) when is_integer(a) and is_integer(b), do: Kernel.+(a, b)
   
-  def add(a, b) when is_float(a), do: add(Rational.FloatConversion.float_to_rational(a), b) 
+  def add(a, b) when is_float(a), do: add(Ratio.FloatConversion.float_to_rational(a), b) 
   
-  def add(a, b) when is_float(b), do: add(a, Rational.FloatConversion.float_to_rational(b)) 
+  def add(a, b) when is_float(b), do: add(a, Ratio.FloatConversion.float_to_rational(b)) 
 
-  def add(a, %Rational{numerator: b, denominator: lcm}) when is_integer(a), do: Kernel.+(a * lcm, b) <|> lcm
-  def add(%Rational{numerator: a, denominator: lcm}, b) when is_integer(b), do: Kernel.+(b * lcm, a) <|> lcm
+  def add(a, %Ratio{numerator: b, denominator: lcm}) when is_integer(a), do: Kernel.+(a * lcm, b) <|> lcm
+  def add(%Ratio{numerator: a, denominator: lcm}, b) when is_integer(b), do: Kernel.+(b * lcm, a) <|> lcm
 
-  def add(%Rational{numerator: a, denominator: lcm}, %Rational{numerator: c, denominator: lcm}) do
+  def add(%Ratio{numerator: a, denominator: lcm}, %Ratio{numerator: c, denominator: lcm}) do
     Kernel.+(a, c) <|> lcm
   end
   
-  def add(%Rational{numerator: a, denominator: b}, %Rational{numerator: c, denominator: d}) do
+  def add(%Ratio{numerator: a, denominator: b}, %Ratio{numerator: c, denominator: d}) do
     Kernel.+((a * d), (c * b)) <|> (b * d)  
   end
   
@@ -192,12 +192,14 @@ defmodule Rational do
       5
       iex> 2.3 + 0.3
       13 <|> 5
+      iex> 2 + (2 <|> 3)
+      5 <|> 5
   """
   def a + b when is_integer(a) and is_integer(b), do: Kernel.+(a, b)
   def a + b, do: add(a, b)
   
   @doc """
-  Longhand for Rational.-/2
+  Longhand for `Ratio.-/2`
   """
   def sub(a, b) when is_integer(a) and is_integer(b), do: Kernel.-(a, b)
   def sub(a, b), do: add(a, negate(b))
@@ -222,16 +224,16 @@ defmodule Rational do
   def a - b, do: add(a, negate(b))
 
   @doc """
-  Longhand for `Rational.-/1`
+  Longhand for `Ratio.-/1`
   """
   def negate(num) 
   
   def negate(num) when is_integer(num), do: Kernel.-(num)
   
-  def negate(num) when is_float(num), do: negate(Rational.FloatConversion.float_to_rational(num))
+  def negate(num) when is_float(num), do: negate(Ratio.FloatConversion.float_to_rational(num))
 
-  def negate(%Rational{numerator: numerator, denominator: denominator}) do
-    %Rational{numerator: Kernel.-(numerator), denominator: denominator}
+  def negate(%Ratio{numerator: numerator, denominator: denominator}) do
+    %Ratio{numerator: Kernel.-(numerator), denominator: denominator}
   end
 
 
@@ -263,27 +265,27 @@ defmodule Rational do
   Coerces the number to a rational if it is a float.
   """
   def (+num) when is_integer(num), do: Kernel.+(num)
-  def (+num) when is_float(num), do: Rational.FloatConversion.float_to_rational(num)
+  def (+num) when is_float(num), do: Ratio.FloatConversion.float_to_rational(num)
   def (+num), do: num
 
 
 
   @doc """
-  Longhand for Rational.*/2
+  Longhand for `Ratio.*/2`
   """
   def mul(number1, number2)
   def mul(number1, number2) when is_number(number1) and is_number(number2), do: Kernel.*(number1, number2)
 
-  def mul(%Rational{numerator: numerator, denominator: denominator}, number) when is_number(number) do
+  def mul(%Ratio{numerator: numerator, denominator: denominator}, number) when is_number(number) do
     Kernel.*(numerator, number) <|> (denominator)
   end
 
-  def mul(number, %Rational{numerator: numerator, denominator: denominator}) when is_number(number) do
+  def mul(number, %Ratio{numerator: numerator, denominator: denominator}) when is_number(number) do
     Kernel.*(numerator, number) <|> (denominator)
   end
 
 
-  def mul(%Rational{numerator: numerator1, denominator: denominator1}, %Rational{numerator: numerator2, denominator: denominator2}) do
+  def mul(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{numerator: numerator2, denominator: denominator2}) do
     Kernel.*(numerator1, numerator2) <|> Kernel.*(denominator1, denominator2)
   end
 
@@ -304,24 +306,24 @@ defmodule Rational do
   def a * b, do: mul(a, b)
 
   @doc """
-  Longhand for Rational.//2
+  Longhand for `Ratio.//2`
 
   """
   def div(a, b)
 
   def div(a, b) when is_number(a) and is_integer(b), do: a <|> b
 
-  def div(%Rational{numerator: numerator, denominator: denominator}, number) when is_number(number) do
+  def div(%Ratio{numerator: numerator, denominator: denominator}, number) when is_number(number) do
     numerator <|> Kernel.*(denominator, number)
   end
 
   # 6 / (2 <|> 3) == 6 * (3 <|> 2)
-  def div(number, %Rational{numerator: numerator, denominator: denominator}) when is_number(number) do
+  def div(number, %Ratio{numerator: numerator, denominator: denominator}) when is_number(number) do
     mul(number, denominator <|> numerator)
   end
 
 
-  def div(%Rational{numerator: numerator1, denominator: denominator1}, %Rational{numerator: numerator2, denominator: denominator2}) do
+  def div(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{numerator: numerator2, denominator: denominator2}) do
     Kernel.*(numerator1, denominator2) <|> Kernel.*(denominator1, numerator2)
   end
 
@@ -332,10 +334,10 @@ defmodule Rational do
 
   ## Examples
 
-      iex> Rational.div(1 <|> 3, 2)
+      iex> (1 <|> 3) / 2
       1 <|> 6
-      iex> Rational.div( 2 <|> 3, 8 <|> 3)
-      1 <|> 4
+      iex> (2 <|> 3) / (8 <|> 5)
+      5 <|> 12
 
   """
   def a / b
@@ -348,17 +350,15 @@ defmodule Rational do
     defexception message: "These things cannot be compared."
   end
 
-  
-
-  def compare(%Rational{numerator: a, denominator: b}, %Rational{numerator: c, denominator: d}) do
+  def compare(%Ratio{numerator: a, denominator: b}, %Ratio{numerator: c, denominator: d}) do
       compare(Kernel.*(a, d), Kernel.*(b, c))
   end
 
-  def compare(%Rational{numerator: numerator, denominator: denominator}, b) do
+  def compare(%Ratio{numerator: numerator, denominator: denominator}, b) do
       compare(numerator, Kernel.*(b, denominator))
   end
 
-  def compare(a, %Rational{numerator: numerator, denominator: denominator}) do
+  def compare(a, %Ratio{numerator: numerator, denominator: denominator}) do
       compare(Kernel.*(a, denominator), numerator)
   end
 
@@ -412,11 +412,11 @@ defmodule Rational do
       iex>pow(3 <|> 2, 10)
       59049 <|> 1024
   """
-  @spec pow(number()|Rational.t(), pos_integer()) :: number() | Rational.t()
+  @spec pow(number()|Ratio.t(), pos_integer()) :: number() | Ratio.t()
   def pow(x, n)
 
   #Convert Float to Rational.
-  def pow(x, n) when is_float(x), do: pow(Rational.FloatConversion.float_to_rational(x), n)
+  def pow(x, n) when is_float(x), do: pow(Ratio.FloatConversion.float_to_rational(x), n)
 
   # Small powers
   def pow(x, 1), do: x
@@ -437,7 +437,7 @@ defmodule Rational do
   @doc """
   Converts the given *number* to a Float. As floats do not have arbitrary precision, this operation is generally not reversible.
   """
-  def to_float(%Rational{numerator: numerator, denominator: denominator}), do: Kernel./(numerator, denominator)
+  def to_float(%Ratio{numerator: numerator, denominator: denominator}), do: Kernel./(numerator, denominator)
   def to_float(number), do: :erlang.float(number)
 
 
@@ -450,25 +450,25 @@ defmodule Rational do
   
   ## Examples
 
-      iex>Rational.is_rational?(10)
+      iex>Ratio.is_rational?(10)
       false
-      iex>Rational.is_rational?("foo")
+      iex>Ratio.is_rational?("foo")
       false
-      iex>Rational.is_rational?(10.0)
+      iex>Ratio.is_rational?(10.0)
       false
-      iex>Rational.is_rational?(10.234)
+      iex>Ratio.is_rational?(10.234)
       false
-      iex>Rational.is_rational?(10 <|> 3)
+      iex>Ratio.is_rational?(10 <|> 3)
       true
-      iex>Rational.is_rational?(10 <|> 5)
+      iex>Ratio.is_rational?(10 <|> 5)
       false
-      iex>Rational.is_rational?(+20.234)
+      iex>Ratio.is_rational?(+20.234)
       true
-      iex>Rational.is_rational?(+20.0)
+      iex>Ratio.is_rational?(+20.0)
       false
 
   """
-  def is_rational?(%Rational{}), do: true
+  def is_rational?(%Ratio{}), do: true
   def is_rational?(_), do: false
 
 
@@ -478,26 +478,26 @@ defmodule Rational do
 
   ## Examples
 
-      iex> Rational.to_string 10 <|> 7
+      iex> Ratio.to_string 10 <|> 7
       "10 <|> 7"
   """
   def to_string(rational)
-  def to_string(%Rational{numerator: numerator, denominator: denominator}) when denominator == 1 do
+  def to_string(%Ratio{numerator: numerator, denominator: denominator}) when denominator == 1 do
     "#{numerator}"
   end
-  def to_string(%Rational{numerator: numerator, denominator: denominator}) do
+  def to_string(%Ratio{numerator: numerator, denominator: denominator}) do
     "#{numerator} <|> #{denominator}"
   end
 
-  defimpl String.Chars, for: Rational do
+  defimpl String.Chars, for: Ratio do
     def to_string(rational) do
-      Rational.to_string(rational)    
+      Ratio.to_string(rational)    
     end
   end
 
-  defimpl Inspect, for: Rational do
+  defimpl Inspect, for: Ratio do
     def inspect(rational, _) do
-      Rational.to_string(rational)    
+      Ratio.to_string(rational)    
     end
   end
 
@@ -507,7 +507,7 @@ defmodule Rational do
   # Ensures that a `-` is only kept in the numerator.
   defp simplify(rational)
 
-  defp simplify(%Rational{numerator: numerator, denominator: denominator}) do
+  defp simplify(%Ratio{numerator: numerator, denominator: denominator}) do
     gcdiv = gcd(numerator, denominator)
     new_denominator = Kernel.div(denominator, gcdiv)
     if new_denominator < 0 do
@@ -518,13 +518,13 @@ defmodule Rational do
     if new_denominator == 1 do
       Kernel.div(numerator, gcdiv)
     else
-      %Rational{numerator: Kernel.div(numerator, gcdiv), denominator: new_denominator}
+      %Ratio{numerator: Kernel.div(numerator, gcdiv), denominator: new_denominator}
     end
   end
 
   # Returns an integer if the result is of the form _ <|> 1
   defp remove_denominator_if_integer(rational)
-  defp remove_denominator_if_integer(%Rational{numerator: numerator, denominator: 1}), do: numerator
+  defp remove_denominator_if_integer(%Ratio{numerator: numerator, denominator: 1}), do: numerator
   defp remove_denominator_if_integer(rational), do: rational
 
 
