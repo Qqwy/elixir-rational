@@ -7,8 +7,8 @@ defmodule Rational.Mixfile do
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps
-     package: package
+     deps: deps,
+     package: package,
      description: description
    ]
   end
@@ -31,14 +31,16 @@ defmodule Rational.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-
+      {:earmark, ">= 0.0.0", only: [:dev]}, # Markdown, dependency of ex_doc
+      {:ex_doc, "~> 0.11", only: [:dev]},    # Documentation for Hex.pm
     ]
   end
 
   defp package do
     [
-      maintainers: "Qqwy/WM",
-      licenses: "MIT",
+      files: ["lib", "mix.exs", "README*",  "LICENSE*"],
+      maintainers: ["Qqwy/WM"],
+      licenses: ["MIT"],
       links: %{github: "https://github.com/qqwy/elixir-rational"} 
     ]
   end
