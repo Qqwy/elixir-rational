@@ -1,42 +1,17 @@
 # TODO: add @specs.
 # TODO: >, <, >=, <=
 defmodule Rational do
-  @vsn "0.5"
+  @vsn "0.6"
 
 
-  @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1, >: 2, >=: 2, <: 2, <=: 2]
+  @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
   @overridden_math_functions [div: 2, abs: 1] ++ @inline_math_functions
   @rational_operator [<|>: 2]
 
 
-  import Kernel, except: [div: 2, abs: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1, >: 2, >=: 2, <: 2, <=: 2]
+  import Kernel, except: [div: 2, abs: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
 
   # TODO: Add option to not load the operator.
-
-  # defmacro __using__(options) do
-
-  #   restricted_functions = [to_float: 1]
-  #   overridden_kernel_functions = []
-  #   if Keyword.fetch(options, :without_overridden_math) == true do
-  #     restricted_functions = restricted_functions ++ @overridden_math_functions
-  #   else
-  #     if Keyword.fetch(options, :without_inline_math) == true do
-  #       restricted_functions = restricted_functions ++ @inline_math_functions
-  #       overridden_kernel_functions = @inline_math_functions
-  #     else
-  #       overridden_kernel_functions = @overridden_math_functions
-  #     end
-  #   end
-
-  #   if Keyword.fetch(options, :without_operator) == true do
-  #     restricted_functions = restricted_functions ++ @rational_operator
-  #   end
-  #   quote do
-  #     import Kernel, except: unquote(overridden_kernel_functions)
-  #     import Rational, except: unquote(restricted_functions)
-  #   end
-
-  # end
 
   # Does not import any overridden math functions
   defmacro __using__(without_overridden_math: true) do
@@ -59,31 +34,15 @@ defmodule Rational do
     end
   end
 
-        #import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
-        #import Rational, except: [to_float: 1]
-  #       unquote(IO.puts "OPTIONS:#{opts[:without_inline_math]}")
-
-  #       if unquote(opts)[:without_inline_math] == true do
-  #       else
-  #         import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
-  #         import Rational, except: [to_float: 1]
-  #       end
-
-
-  #     # if unquote(opts[:without_inline_math]) do
-  #     #   import Kernel, except: [div: 2, abs: 1]
-  #     #   import Rational, except: [to_float: 1, abs: 1]
-  #     # else
-  #     #   import Kernel, except: [div: 2, *: 2, /: 2, abs: 1]
-  #     #   import Rational, except: [to_float: 1]
-  #     # end
-  #   end
-  # end
-
 
   @doc """
   A Rational number is defined as a numerator and a denominator.
   Both the numerator and the denominator are integers.
+  If you want to match for a rational number, you can do so by matching against this Struct.
+
+  Note that *directly manipulating* the struct, however, is usually a bad idea, as then there are no validity checks, nor wil the rational be simplified.
+
+  Use `Rational.<|>/2` or `Rational.new/2` instead.
   """
   defstruct numerator: 0, denominator: 1
   @type t :: %Rational{numerator: integer(), denominator: pos_integer()}
@@ -148,15 +107,12 @@ defmodule Rational do
     div(numerator, denominator)
   end
 
-
-
   @doc """
   Prefix-version of `numerator <|> denominator`.
   Useful when `<|>` is not available (for instance, when already in use by another module)
   
   """
   def new(numerator, denominator), do: numerator <|> denominator
-
 
   @doc """
   Returns the absolute version of the given number (which might be an integer, float or Rational).
@@ -212,6 +168,9 @@ defmodule Rational do
   def add(a, b) when is_float(a), do: add(Rational.FloatConversion.float_to_rational(a), b) 
   
   def add(a, b) when is_float(b), do: add(a, Rational.FloatConversion.float_to_rational(b)) 
+
+  def add(a, %Rational{numerator: b, denominator: lcm}) when is_integer(a), do: Kernel.+(a * lcm, b) <|> lcm
+  def add(%Rational{numerator: a, denominator: lcm}, b) when is_integer(b), do: Kernel.+(b * lcm, a) <|> lcm
 
   def add(%Rational{numerator: a, denominator: lcm}, %Rational{numerator: c, denominator: lcm}) do
     Kernel.+(a, c) <|> lcm
@@ -384,70 +343,34 @@ defmodule Rational do
 
   def a / b, do: div(a, b)
 
-
-  @doc """
-  Compares the numbers *a* and *b*. (one or both of which might be rationals)
-
-  Returns:
-
-  - `-1` if *a* is smaller
-  -  `0` if the numbers are the same size
-  - `1` if *a* is bigger.
-
-
-  """
-  # def compare(a, b) when is_number(a) and is_number(b) and Kernel.>(a, b), do: 1
-  # def compare(a, b) when is_number(a) and is_number(b) and a == b, do: 0
-  # def compare(a, b) when is_number(a) and is_number(b) and Kernel.<(a, b), do: Kernel.-(1)
-
-  # def compare(a, b=%Rational{}) when is_number(a) do
-  #   Kernel.-(compare(b, a))
-  # end
-
-  # # Multiply both sides by the denominator:
-  # # (3 <|> 2) < 2 == 3 < (2*2)
-  # def compare(%Rational{numerator: numerator, denominator: denominator}, b) when is_number(b) do
-  #   compare(numerator, Kernel.*(b, denominator))
-  # end
-
-  # def compare(%Rational{numerator: a, denominator: b}, %Rational{numerator: c, denominator: d}) do
-  #   compare(Kernel.*(a,d), Kernel.*(b,c))
-  # end
-
-
-
-  defmacro compare(%Rational{numerator: a, denominator: b}, %Rational{numerator: c, denominator: d}) do
-    quote do
-      compare(Kernel.*(unquote(a), unquote(d)), Kernel.*(unquote(b), unquote(c)))
-    end
+  defmodule ComparisonError do
+    defexception message: "These things cannot be compared."
   end
 
-  defmacro compare(%Rational{numerator: numerator, denominator: denominator}, b) do
-    quote do
-      compare(unquote(numerator), Kernel.*(unquote(b), unquote(denominator)))
-    end
+  
+
+  def compare(%Rational{numerator: a, denominator: b}, %Rational{numerator: c, denominator: d}) do
+      compare(Kernel.*(a, d), Kernel.*(b, c))
   end
 
-  defmacro compare(a, %Rational{numerator: numerator, denominator: denominator}) do
-    quote do
-      compare(Kernel.*(unquote(a), unquote(denominator)), unquote(numerator))
-    end
+  def compare(%Rational{numerator: numerator, denominator: denominator}, b) do
+      compare(numerator, Kernel.*(b, denominator))
+  end
+
+  def compare(a, %Rational{numerator: numerator, denominator: denominator}) do
+      compare(Kernel.*(a, denominator), numerator)
   end
 
 
-  # Compares any other value that Erlang can understand.
-  defmacro compare(a, b) do
-    quote do
-      (:erlang.>(unquote(a), unquote(b)) && 1)
-      ||
-      (:erlang.<(unquote(a), unquote(b)) && -1)
-      ||
-      (0)
+  # Compares any other value that Elixir/Erlang can understand.
+  def compare(a, b) do
+    cond do
+      a > b ->  1
+      a < b -> -1
+      a == b -> 0
+      true  ->  raise ComparisonError, "These things cannot be compared: #{a} , #{b}"
     end
   end
-
-
-  # TODO: Rewrite as macros that compile to Erlang statements, so they can be used in guards.
 
   @doc """
   Returns true if *a* is larger than *b*
@@ -457,49 +380,26 @@ defmodule Rational do
       compare(unquote(a), unquote(b)) == 1
     end  
   end
-  #def (a=%Rational{}) > (b=%Rational{}), do: compare(a, b) == 1
-  #def a > b, do: Kernel.>(a, b)
-  
 
   @doc """
-  Returns true if *a* is larger than or equal to *b*
+  True if *a* is larger than or equal to *b*
   """
-  def a >= b
-  def (a=%Rational{}) >= (b=%Rational{}), do: Kernel.>=(compare(a, b),  0)
-  def a >= b, do: Kernel.>=(a, b)
-  @doc """
-  Returns true if *a* is smaller than *b*
-  """
-  def a < b
-  def (a=%Rational{}) < (b=%Rational{}), do: compare(a, b) == -1
-  def a < b, do: Kernel.<(a, b)
-  @doc """
-  Returns true if *a* is smaller than or equal to *b*
-  """
-  def a <= b
-  def (a=%Rational{}) <= (b=%Rational{}), do: Kernel.<=(compare(a, b), 0)
-  def a <= b, do: Kernel.<=(a, b)
+  def gt?(a, b), do: compare(a, b) ==  1
 
   @doc """
-  Longhand for Rational.>(a, b)
+  True if *a* is smaller than *b*
   """
-  def gt?(a, b), do: a > b
+  def lt?(a, b), do: compare(a, b) == -1
+
   @doc """
-  Longhand for Rational.<(a, b)
+  True if *a* is larger than or equal to *b*
   """
+  def gte?(a, b), do: compare(a, b) >=  0
 
-  def lt?(a, b), do: a < b
   @doc """
-  Longhand for Rational.>=(a, b)
+  True if *a* is smaller than or equal to *b*
   """
-  def gte?(a, b), do: a >= b
-  @doc """
-  Longhand for Rational.<=(a, b)
-  """
-  def lte?(a, b), do: a <= b
-
-
-
+  def lte?(a, b), do: compare(a, b) <=  0
 
   @doc """
   returns *x* to the *n* th power.
@@ -641,16 +541,6 @@ defmodule Rational do
   
   defp gcd(0, b), do: abs(b)
   defp gcd(a, b), do: gcd(b, Kernel.rem(a,b))
-
-  # Calculates the Least Common Multiple of two numbers.
-  # Unused right now
-  defp _lcm(a, b)
-
-  defp _lcm(0, 0), do: 0
-  defp _lcm(a, b) do
-    Kernel.div(Kernel.*(a, b), gcd(a, b))
-  end
-
 
   defoverridable @overridden_math_functions # So they can without problem be overridden by other libraries that extend on this one. 
 end

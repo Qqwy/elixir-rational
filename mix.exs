@@ -3,7 +3,7 @@ defmodule Rational.Mixfile do
 
   def project do
     [app: :rational,
-     version: "0.0.1",
+     version: "0.6.0",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -29,10 +29,10 @@ defmodule Rational.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      { :decimal, "~> 1.1.0" }
     ]
   end
 
+  # Can be overridden to allow different float precisions.
   Application.put_env(:rational, :max_float_to_rational_digits, 10)
 
 
