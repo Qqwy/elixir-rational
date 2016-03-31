@@ -1,5 +1,10 @@
 # Ratio
 
+
+[![hex.pm version](https://img.shields.io/hexpm/v/ratio.svg)](https://hex.pm/packages/ratio)
+[![Build Status](https://travis-ci.org/Qqwy/elixir-rational.svg?branch=master)](https://travis-ci.org/Qqwy/elixir-rational)
+
+
 This library allows you to use Rational numbers in Elixir, to enable exact calculations with all numbers big and small.
 
 
