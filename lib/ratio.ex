@@ -27,7 +27,7 @@ defmodule Ratio do
 
   If you do not want the new operator `<|>` to be imported, use
 
-      # Does not include <|>, construct Rational numbers using Rational.new(a, b)
+      # Does not include <|>, construct Rational numbers using Ratio.new(a, b)
       use Ratio, operator: false
 
   These options can be combined (with `override_math` taking precedence over `inline_math` )
@@ -144,15 +144,15 @@ defmodule Ratio do
   Prefix-version of `numerator <|> denominator`.
   Useful when `<|>` is not available (for instance, when already in use by another module)
 
-  Not imported when calling `use Ratio`, so always call it as `Rational.new(a, b)`
+  Not imported when calling `use Ratio`, so always call it as `Ratio.new(a, b)`
 
   ## Examples
 
-      iex> Rational.new(1, 2)
+      iex> Ratio.new(1, 2)
       1 <|> 2
-      iex> Rational.new(100, 300)
+      iex> Ratio.new(100, 300)
       1 <|> 3
-      iex> Rational.new(1.5, 4)
+      iex> Ratio.new(1.5, 4)
       3 <|> 8
   """
   def new(numerator, denominator), do: numerator <|> denominator
