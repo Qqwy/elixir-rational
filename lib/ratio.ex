@@ -6,7 +6,7 @@ defmodule Ratio do
   @moduledoc """
   This module allows you to use Rational numbers in Elixir, to enable exact calculations with all numbers big and small.
 
-  It defines the new <|> operator, (optionally) overrides the arithmetic +, -, * and / operators to work with ints, floats and Rational numbers all alike.
+  It also defines the new <|> operator and (optionally) overrides the arithmetic +, -, * and / operators to work with ints, floats and Rational numbers all alike.
 
   Floats are also automatically coerced into Rationals whenever possible.
 
@@ -27,6 +27,7 @@ defmodule Ratio do
 
   If you do not want the new operator `<|>` to be imported, use
 
+      # Does not include <|>, construct Rational numbers using Rational.new(a, b)
       use Ratio, operator: false
 
   These options can be combined (with `override_math` taking precedence over `inline_math` )
@@ -36,7 +37,7 @@ defmodule Ratio do
   @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
   @overridden_math_functions [div: 2, abs: 1] #++ @inline_math_functions
   @rational_operator [<|>: 2]
-  @never_export_these_functions [to_float: 1]
+  @never_export_these_functions [to_float: 1, new: 2]
 
   # TODO: Find out why it is not possible to use @-annotations in this except clause.
   import Kernel, except: [div: 2, abs: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
