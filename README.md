@@ -62,7 +62,7 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
         def deps do
           [
-            {:ratio, "~> 0.6.0"}
+            {:ratio, "~> 1.0.0"}
           ]
         end
 
