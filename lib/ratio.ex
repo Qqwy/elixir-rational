@@ -31,7 +31,6 @@ defmodule Ratio do
       use Ratio, operator: false
 
   These options can be combined (with `override_math` taking precedence over `inline_math` )
-
   """
 
   @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
@@ -144,7 +143,17 @@ defmodule Ratio do
   @doc """
   Prefix-version of `numerator <|> denominator`.
   Useful when `<|>` is not available (for instance, when already in use by another module)
-  
+
+  Not imported when calling `use Ratio`, so always call it as `Rational.new(a, b)`
+
+  ## Examples
+
+      iex> Rational.new(1, 2)
+      1 <|> 2
+      iex> Rational.new(100, 300)
+      1 <|> 3
+      iex> Rational.new(1.5, 4)
+      3 <|> 8
   """
   def new(numerator, denominator), do: numerator <|> denominator
 
@@ -470,7 +479,10 @@ defmodule Ratio do
 
   @doc """
   Converts the given *number* to a Float. As floats do not have arbitrary precision, this operation is generally not reversible.
+  
+  Not imported when calling `use Ratio`, so always call it as `Rational.to_float(number)`
   """
+  @spec to_float(Ratio.t | number) :: float
   def to_float(%Ratio{numerator: numerator, denominator: denominator}), do: Kernel./(numerator, denominator)
   def to_float(number), do: :erlang.float(number)
 
