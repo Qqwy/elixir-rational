@@ -193,7 +193,7 @@ defmodule Ratio do
       iex> 2.3 + 0.3
       13 <|> 5
       iex> 2 + (2 <|> 3)
-      5 <|> 5
+      8 <|> 3
   """
   def a + b when is_integer(a) and is_integer(b), do: Kernel.+(a, b)
   def a + b, do: add(a, b)
