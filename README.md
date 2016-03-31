@@ -74,11 +74,13 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
   or
 
-        use Ratio, without_inline_math: true # Does not override +, -, *, /
+        # Does not override +, -, *, /
+        use Ratio, without_inline_math: true 
 
   or
 
-        use Ratio, without_overridden_math: true # Does not override +, -, *, /, abs, div
+        # Does not override +, -, *, /, abs, div
+        use Ratio, without_overridden_math: true 
 
 
 
