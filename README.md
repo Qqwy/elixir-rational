@@ -58,9 +58,7 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
-
-  1. Add rational to your list of dependencies in `mix.exs`:
+  The package can be installed from hex, by adding `:ratio` to your list of dependencies in `mix.exs`:
 
         def deps do
           [
@@ -68,23 +66,28 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
           ]
         end
 
-  2. use Ratio wherever you want to use Rational numbers
 
-        use Ratio
+  To use the module, use `use Ratio` where you need it.
 
-  or
+  If you do not want to override the Kernel's built-in math operators, use 
 
-        # Does not override +, -, *, /
-        use Ratio, without_inline_math: true 
+      # Does not override *, /, -, +, div, abs
+      use Ratio, override_math: false
 
-  or
+  If you just do not want to override the Kernel's built-in *inline* math operators, use `use Ratio, inline_math: false`
 
-        # Does not override +, -, *, /, abs, div
-        use Ratio, without_overridden_math: true 
+      # Does not override *, /, -, +
+      use Ratio, override_math: false
 
+  If you do not want the new operator `<|>` to be imported, use
+
+      use Ratio, operator: false
+
+  These options can be combined (with `override_math` taking precedence over `inline_math` )
 
 
 ## Changelog
+- 1.0.0 Proper `__using__` macro, with more readable option names. Stable release. 
 - 0.6.0 First public release
 - 0.0.1 First features
 

@@ -1,39 +1,72 @@
 # TODO: add @specs.
 # TODO: >, <, >=, <=
 defmodule Ratio do
-  @vsn "0.6.1"
+  @vsn "1.0.0"
 
+  @moduledoc """
+  This module allows you to use Rational numbers in Elixir, to enable exact calculations with all numbers big and small.
+
+  It defines the new <|> operator, (optionally) overrides the arithmetic +, -, * and / operators to work with ints, floats and Rational numbers all alike.
+
+  Floats are also automatically coerced into Rationals whenever possible.
+
+  And don't worry: If you don't like operator-overloading: There are longhand function aliases available too.
+
+
+  To use the module, use `use Ratio` where you need it.
+
+  If you do not want to override the Kernel's built-in math operators, use 
+
+      # Does not override *, /, -, +, div, abs
+      use Ratio, override_math: false
+
+  If you just do not want to override the Kernel's built-in *inline* math operators, use `use Ratio, inline_math: false`
+
+      # Does not override *, /, -, +
+      use Ratio, override_math: false
+
+  If you do not want the new operator `<|>` to be imported, use
+
+      use Ratio, operator: false
+
+  These options can be combined (with `override_math` taking precedence over `inline_math` )
+
+  """
 
   @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
-  @overridden_math_functions [div: 2, abs: 1] ++ @inline_math_functions
+  @overridden_math_functions [div: 2, abs: 1] #++ @inline_math_functions
   @rational_operator [<|>: 2]
+  @never_export_these_functions [to_float: 1]
 
-
+  # TODO: Find out why it is not possible to use @-annotations in this except clause.
   import Kernel, except: [div: 2, abs: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
+  
+  defmacro __using__(opts) do
+    override_math   = Keyword.get(opts, :override_math, true)
+    use_inline_math = Keyword.get(opts, :inline_math, true)
+    use_operator    = Keyword.get(opts, :operator, true)
 
-  # TODO: Add option to not load the operator.
+    overridden_kernel_functions = cond do
+      use_inline_math && override_math -> 
+        @overridden_math_functions ++ @inline_math_functions
+      override_math ->
+        @overridden_math_functions
+      true -> 
+        []
+    end
+    hidden_functions = (@overridden_math_functions ++ @inline_math_functions) -- overridden_kernel_functions
 
-  # Does not import any overridden math functions
-  defmacro __using__(without_overridden_math: true) do
+    if !use_operator do  
+      hidden_functions = hidden_functions ++ @rational_operator
+    end
+
+    hidden_functions = hidden_functions ++ @never_export_these_functions
+
     quote do
-      import Ratio, except: unquote([to_float: 1] ++ @overridden_math_functions)
+      import Kernel, except: unquote(overridden_kernel_functions)
+      import Ratio, except: unquote(hidden_functions)
     end
   end
-
-  # Does not import the overridden inline math *, /, functions:
-  defmacro __using__(without_inline_math: true) do
-    quote do
-      import Ratio, except: unquote([to_float: 1] ++ @inline_math_functions)
-    end
-  end
-
-  defmacro __using__(_) do
-    quote do
-      import Kernel, except: unquote(@overridden_math_functions)
-      import Ratio, except: [to_float: 1]
-    end
-  end
-
 
   @doc """
   A Rational number is defined as a numerator and a denominator.
