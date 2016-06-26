@@ -56,9 +56,12 @@ defmodule Ratio do
     end
     hidden_functions = (@overridden_math_functions ++ @inline_math_functions) -- overridden_kernel_functions
 
-    if !use_operator do  
-      hidden_functions = hidden_functions ++ @rational_operator
-    end
+    hidden_functions = 
+      if !use_operator do  
+         hidden_functions ++ @rational_operator
+      else
+        hidden_functions
+      end
 
     hidden_functions = hidden_functions ++ @never_export_these_functions
 
@@ -556,15 +559,20 @@ defmodule Ratio do
   defp simplify(%Ratio{numerator: numerator, denominator: denominator}) do
     gcdiv = gcd(numerator, denominator)
     new_denominator = Kernel.div(denominator, gcdiv)
-    if new_denominator < 0 do
-      new_denominator = Kernel.-(new_denominator)
-      numerator = Kernel.-(numerator)
-    end
+    {new_denominator, numerator} = normalize_denom_num(new_denominator, numerator)
 
     if new_denominator == 1 do
       Kernel.div(numerator, gcdiv)
     else
       %Ratio{numerator: Kernel.div(numerator, gcdiv), denominator: new_denominator}
+    end
+  end
+
+  defp normalize_denom_num(denominator, numerator) do
+    if denominator < 0 do
+      {Kernel.-(denominator), Kernel.-(numerator)}
+    else
+      {denominator, numerator}
     end
   end
 
