@@ -23,9 +23,12 @@ defmodule Ratio.FloatConversion do
       iex> Ratio.FloatConversion.float_to_rational(1.1, 3)
       11 <|> 10
 
-
   """
-  def float_to_rational(float, max_decimals \\ @max_decimals) do
+  def float_to_rational(float, max_decimals \\ @max_decimals)
+  def float_to_rational(float, max_decimals) when float < 0.0 do
+    -float_to_rational(abs(float), max_decimals)
+  end
+  def float_to_rational(float, max_decimals) do
     float_to_intdec_tuple(float, max_decimals)
     |> intdec_tuple_to_rational
   end
