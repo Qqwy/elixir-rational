@@ -3,7 +3,7 @@ defmodule Rational.Mixfile do
 
   def project do
     [app: :ratio,
-     version: "1.1.0",
+     version: "1.1.1",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -48,12 +48,6 @@ defmodule Rational.Mixfile do
   defp description do
     """
       This library allows you to use Rational numbers in Elixir, to enable exact calculations with all numbers big and small.
-
-      It defines the new <|> operator, (optionally) overrides the arithmetic +, -, * and / operators to work with ints, floats and Rational numbers all alike.
-
-      Floats are also automatically coerced into Rationals whenever possible.
-
-      And don't worry: If you don't like operator-overloading: There are longhand function aliases available too.
     """
   end
 

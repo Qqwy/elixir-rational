@@ -87,6 +87,8 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
 
 ## Changelog
+- 1.1.1 Negative floats are now converted correctly.
+- 1.1.0 Elixir 1.3 compliance (Statefree if/else/catch clauses, etc.)
 - 1.0.0 Proper `__using__` macro, with more readable option names. Stable release. 
 - 0.6.0 First public release
 - 0.0.1 First features
