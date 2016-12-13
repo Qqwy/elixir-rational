@@ -1,7 +1,7 @@
 # TODO: add @specs.
 # TODO: >, <, >=, <=
 defmodule Ratio do
-  @vsn "1.0.0"
+  @vsn "1.2.0"
 
   @moduledoc """
   This module allows you to use Rational numbers in Elixir, to enable exact calculations with all numbers big and small.
@@ -40,6 +40,9 @@ defmodule Ratio do
 
   # TODO: Find out why it is not possible to use @-annotations in this except clause.
   import Kernel, except: [div: 2, abs: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
+
+
+  @behaviour Numeric # Ratio is fully `Numbers`-compatible.
   
   defmacro __using__(opts) do
     override_math   = Keyword.get(opts, :override_math, true)
@@ -120,7 +123,7 @@ defmodule Ratio do
   def _numerator <|> 0 do
     raise ArithmeticError
   end
-
+ 
   def numerator <|> denominator when is_integer(numerator) and is_integer(denominator) do 
     %Ratio{numerator: numerator, denominator: denominator}
     |> simplify
@@ -158,7 +161,7 @@ defmodule Ratio do
       iex> Ratio.new(1.5, 4)
       3 <|> 8
   """
-  def new(numerator, denominator), do: numerator <|> denominator
+  def new(numerator, denominator \\ 1), do: numerator <|> denominator
 
   @doc """
   Returns the absolute version of the given number (which might be an integer, float or Rational).
@@ -170,6 +173,7 @@ defmodule Ratio do
   """
   def abs(number) when is_number(number), do: Kernel.abs(number)
   def abs(%Ratio{numerator: numerator, denominator: denominator}), do: Kernel.abs(numerator) <|> denominator
+
 
   @doc """
   Returns the sign of the given number (which might be an integer, float or Rational)
@@ -282,6 +286,10 @@ defmodule Ratio do
     %Ratio{numerator: Kernel.-(numerator), denominator: denominator}
   end
 
+  @doc """
+  Alias for `Ratio.negate(num)`; follows Numeric behaviour.
+  """
+  def minus(num), do: negate(num)
 
   @doc """
   Unary minus. Inverts the sign of the given *num*, which might be an integer, float or rational.
@@ -319,20 +327,27 @@ defmodule Ratio do
   @doc """
   Longhand for `Ratio.*/2`
   """
-  def mul(number1, number2)
-  def mul(number1, number2) when is_number(number1) and is_number(number2), do: Kernel.*(number1, number2)
+  def mult(number1, number2)
+  def mult(number1, number2) when is_number(number1) and is_number(number2), do: Kernel.*(number1, number2)
 
-  def mul(%Ratio{numerator: numerator, denominator: denominator}, number) when is_number(number) do
+  def mult(%Ratio{numerator: numerator, denominator: denominator}, number) when is_number(number) do
     Kernel.*(numerator, number) <|> (denominator)
   end
 
-  def mul(number, %Ratio{numerator: numerator, denominator: denominator}) when is_number(number) do
+  def mult(number, %Ratio{numerator: numerator, denominator: denominator}) when is_number(number) do
     Kernel.*(numerator, number) <|> (denominator)
   end
 
 
-  def mul(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{numerator: numerator2, denominator: denominator2}) do
+  def mult(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{numerator: numerator2, denominator: denominator2}) do
     Kernel.*(numerator1, numerator2) <|> Kernel.*(denominator1, denominator2)
+  end
+
+  @doc false
+  # TODO Remove in future version.
+  def mul(number1, number2) do
+    IO.puts "Warning: `Ratio.mul/2` is deprecated. Use `Ratio.mult/2` instead."
+    mult(number1, number2)
   end
 
   @doc """
@@ -349,7 +364,7 @@ defmodule Ratio do
 
   def a * b when is_number(a) and is_number(b), do: Kernel.*(a, b)
 
-  def a * b, do: mul(a, b)
+  def a * b, do: mult(a, b)
 
   @doc """
   Longhand for `Ratio.//2`
@@ -365,7 +380,7 @@ defmodule Ratio do
 
   # 6 / (2 <|> 3) == 6 * (3 <|> 2)
   def div(number, %Ratio{numerator: numerator, denominator: denominator}) when is_number(number) do
-    mul(number, denominator <|> numerator)
+    mult(number, denominator <|> numerator)
   end
 
 

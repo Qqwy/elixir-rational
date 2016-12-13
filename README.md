@@ -7,6 +7,8 @@
 
 This library allows you to use Rational numbers in Elixir, to enable exact calculations with all numbers big and small.
 
+Ratio follows the Numeric behaviour from [Numbers](https://github.com/Qqwy/elixir_number), and can therefore be used in combination with any data type that uses Numbers (such as [Tensor](https://hex.pm/packages/tensor) and [ComplexNum](https://github.com/Qqwy/elixir_complex_num)).
+
 
 ## Some Examples
 
@@ -62,7 +64,7 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
         def deps do
           [
-            {:ratio, "~> 1.0.0"}
+            {:ratio, "~> 1.2.0"}
           ]
         end
 
@@ -87,6 +89,8 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
 
 ## Changelog
+- 1.2.2 Added default argument to `Ratio.new/2`, to follow the Numeric behaviour fully, and added `Ratio.minus/1` as alias for `Ratio.negate/1` for the same reason.
+- 1.2.0 Changed name of `Ratio.mul/2` to `Ratio.mult/2`, to avoid ambiguety, and to allow incorporation with `Numbers`. Deprecation Warning was added to using `Ratio.mul/2`.
 - 1.1.1 Negative floats are now converted correctly.
 - 1.1.0 Elixir 1.3 compliance (Statefree if/else/catch clauses, etc.)
 - 1.0.0 Proper `__using__` macro, with more readable option names. Stable release. 
@@ -99,3 +103,5 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 Observant readers might notice that there also is a '[rational](https://hex.pm/packages/rational)' library in Hex.pm. The design idea between that library vs. this one is a bit different: `Ratio` hides the internal data representation as much as possible, and numbers are therefore created using `Rational.<|>/2` or `Ratio.new/2`. This has as mayor advantage that the internal representation is always correct and simplified.
 
 The Ratio library also (optionally) overrides the built-in math operations `+, -, *, /, div, abs` so they work with combinations of integers, floats and rationals.
+
+Finally, Ratio follows the Numeric behaviour, which means that it can be used with any data types that follow [Numbers](https://github.com/Qqwy/elixir_number).
