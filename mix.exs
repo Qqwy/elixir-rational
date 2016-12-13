@@ -33,7 +33,7 @@ defmodule Rational.Mixfile do
     [
       {:earmark, ">= 0.0.0", only: [:dev]}, # Markdown, dependency of ex_doc
       {:ex_doc, "~> 0.14", only: [:dev]},    # Documentation for Hex.pm
-      {:numbers, "~> 0.1"} # Generic arithmetic dispatching.
+      {:numbers, "~> 2.0"} # Generic arithmetic dispatching.
     ]
   end
 
