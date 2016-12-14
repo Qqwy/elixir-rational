@@ -1,4 +1,4 @@
 %{"decimal": {:hex, :decimal, "1.1.1"},
   "earmark": {:hex, :earmark, "1.0.3", "89bdbaf2aca8bbb5c97d8b3b55c5dd0cff517ecc78d417e87f1d0982e514557b", [:mix], []},
   "ex_doc": {:hex, :ex_doc, "0.14.5", "c0433c8117e948404d93ca69411dd575ec6be39b47802e81ca8d91017a0cf83c", [:mix], [{:earmark, "~> 1.0", [hex: :earmark, optional: false]}]},
-  "numbers": {:hex, :numbers, "2.0.0", "5ca05ce19e354587f52cc7be4f896024f27fff9d8e71dfe6f599560c84e3870c", [:mix], []}}
+  "numbers": {:hex, :numbers, "2.0.1", "ddccab36d4cd201071bac8d57e1a905634ff6711681a9019e984e4cab40a3a78", [:mix], []}}
