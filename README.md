@@ -89,6 +89,7 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
 
 ## Changelog
+- 1.2.4 Fixes Elixir 1.4 warnings in the `mix.exs` file.
 - 1.2.3 Upgraded version of the `Numbers` dependency to 2.0.
 - 1.2.2 Added default argument to `Ratio.new/2`, to follow the Numeric behaviour fully, and added `Ratio.minus/1` as alias for `Ratio.negate/1` for the same reason.
 - 1.2.0 Changed name of `Ratio.mul/2` to `Ratio.mult/2`, to avoid ambiguety, and to allow incorporation with `Numbers`. Deprecation Warning was added to using `Ratio.mul/2`.
