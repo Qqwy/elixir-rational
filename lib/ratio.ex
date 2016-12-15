@@ -127,7 +127,7 @@ defmodule Ratio do
   def numerator <|> denominator when is_integer(numerator) and is_integer(denominator) do 
     %Ratio{numerator: numerator, denominator: denominator}
     |> simplify
-    |> remove_denominator_if_integer
+    # |> remove_denominator_if_integer
   end
 
   def numerator <|> denominator when is_float(numerator) do
@@ -576,11 +576,11 @@ defmodule Ratio do
     new_denominator = Kernel.div(denominator, gcdiv)
     {new_denominator, numerator} = normalize_denom_num(new_denominator, numerator)
 
-    if new_denominator == 1 do
-      Kernel.div(numerator, gcdiv)
-    else
+    # if new_denominator == 1 do
+      # Kernel.div(numerator, gcdiv)
+    # else
       %Ratio{numerator: Kernel.div(numerator, gcdiv), denominator: new_denominator}
-    end
+    # end
   end
 
   defp normalize_denom_num(denominator, numerator) do
@@ -592,9 +592,9 @@ defmodule Ratio do
   end
 
   # Returns an integer if the result is of the form _ <|> 1
-  defp remove_denominator_if_integer(rational)
-  defp remove_denominator_if_integer(%Ratio{numerator: numerator, denominator: 1}), do: numerator
-  defp remove_denominator_if_integer(rational), do: rational
+  # defp remove_denominator_if_integer(rational)
+  # defp remove_denominator_if_integer(%Ratio{numerator: numerator, denominator: 1}), do: numerator
+  # defp remove_denominator_if_integer(rational), do: rational
 
 
   # Calculates the Greatest Common denominator of two numbers.
@@ -602,6 +602,17 @@ defmodule Ratio do
   
   defp gcd(0, b), do: abs(b)
   defp gcd(a, b), do: gcd(b, Kernel.rem(a,b))
+
+  def floor(%Ratio{numerator: numerator, denominator: denominator}), do: Kernel.div(numerator, denominator)
+  def ceil(num = %Ratio{numerator: numerator, denominator: denominator}) do
+    floor = floor(num)
+    if (numerator <|> denominator) == floor do
+      floor
+    else
+      floor + 1
+    end
+  end
+
 
   defoverridable @overridden_math_functions # So they can without problem be overridden by other libraries that extend on this one. 
 end
