@@ -89,8 +89,7 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
 
 ## Changelog
-- 2.0.0 Changes auto-recast-to-integer when working with whole numbers, because this turned out to be too implicit in practice. This is of course a backwards-incompatible change which might break some code.
-Also added `ceil/1` and `floor/1`.
+- 1.2.5 added `ceil/1` and `floor/1`.
 - 1.2.4 Fixes Elixir 1.4 warnings in the `mix.exs` file.
 - 1.2.3 Upgraded version of the `Numbers` dependency to 2.0.
 - 1.2.2 Added default argument to `Ratio.new/2`, to follow the Numeric behaviour fully, and added `Ratio.minus/1` as alias for `Ratio.negate/1` for the same reason.
