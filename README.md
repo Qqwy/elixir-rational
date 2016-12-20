@@ -89,6 +89,8 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
 
 ## Changelog
+- 1.2.8 Adding `:numbers` to the `applications:` list, to ensure that no warnings are thrown when building releases on Elixir < 1.4.0.
+- 1.2.6, 1.2.7 Improving documentation.
 - 1.2.5 added `ceil/1` and `floor/1`.
 - 1.2.4 Fixes Elixir 1.4 warnings in the `mix.exs` file.
 - 1.2.3 Upgraded version of the `Numbers` dependency to 2.0.

@@ -603,7 +603,12 @@ defmodule Ratio do
   defp gcd(0, b), do: abs(b)
   defp gcd(a, b), do: gcd(b, Kernel.rem(a,b))
 
+  def floor(num) when is_integer(num), do: num
+  def floor(num) when is_float(num), do: Float.floor(num)
   def floor(%Ratio{numerator: numerator, denominator: denominator}), do: Kernel.div(numerator, denominator)
+
+  def ceil(num) when is_float(num), do: Float.ceil(num)
+  def ceil(num) when is_integer(num), do: num
   def ceil(num = %Ratio{numerator: numerator, denominator: denominator}) do
     floor = floor(num)
     if (numerator <|> denominator) == floor do
