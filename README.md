@@ -14,7 +14,7 @@ Ratio follows the Numeric behaviour from [Numbers](https://github.com/Qqwy/elixi
 
 Rationals are constructed using `numerator <|> denomerator` (or, if you don't like the infix operator, using `Ratio.new(numerator, denomerator)`)
 
-Notice that Rationals are automaically simplified, and coerced to integers whenever possible.
+Notice that Rationals are automatically simplified, and coerced to integers whenever possible.
 
       iex> use Ratio
       nil
