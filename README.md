@@ -71,7 +71,7 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
   To use the module, use `use Ratio` where you need it.
 
-  If you do not want to override the Kernel's built-in math operators, use 
+  If you do not want to override the Kernel's built-in math operators, use
 
       # Does not override *, /, -, +, div, abs
       use Ratio, override_math: false
@@ -79,7 +79,7 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
   If you just do not want to override the Kernel's built-in *inline* math operators, use `use Ratio, inline_math: false`
 
       # Does not override *, /, -, +
-      use Ratio, override_math: false
+      use Ratio, inline_math: false
 
   If you do not want the new operator `<|>` to be imported, use
 
@@ -98,7 +98,7 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 - 1.2.0 Changed name of `Ratio.mul/2` to `Ratio.mult/2`, to avoid ambiguety, and to allow incorporation with `Numbers`. Deprecation Warning was added to using `Ratio.mul/2`.
 - 1.1.1 Negative floats are now converted correctly.
 - 1.1.0 Elixir 1.3 compliance (Statefree if/else/catch clauses, etc.)
-- 1.0.0 Proper `__using__` macro, with more readable option names. Stable release. 
+- 1.0.0 Proper `__using__` macro, with more readable option names. Stable release.
 - 0.6.0 First public release
 - 0.0.1 First features
 
