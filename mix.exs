@@ -3,13 +3,14 @@ defmodule Rational.Mixfile do
 
   def project do
     [app: :ratio,
-     version: "1.2.8",
+     version: "1.2.9",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps(),
      package: package(),
-     description: description()
+     description: description(),
+     source_url: "https://github.com/qqwy/elixir-rational"
    ]
   end
 
