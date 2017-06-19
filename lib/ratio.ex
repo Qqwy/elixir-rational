@@ -435,9 +435,9 @@ defmodule Ratio do
   # Compares any other value that Elixir/Erlang can understand.
   def compare(a, b) do
     cond do
-      Kernel.>(a, b) ->  1
-      Kernel.<(a, b) -> -1
-      Kernel.==(a, b) -> 0
+      Kernel.>(a, b) ->  :gt
+      Kernel.<(a, b) -> :lt
+      Kernel.==(a, b) -> :eq
       true  ->  raise ComparisonError, "These things cannot be compared: #{a} , #{b}"
     end
   end
@@ -449,22 +449,28 @@ defmodule Ratio do
   @doc """
   True if *a* is larger than or equal to *b*
   """
-  def gt?(a, b), do: compare(a, b) |> Kernel.==(1)
+  def gt?(a, b), do: compare(a, b) |> Kernel.==(:gt)
 
   @doc """
   True if *a* is smaller than *b*
   """
-  def lt?(a, b), do: compare(a, b) |> Kernel.==(-1)
+  def lt?(a, b), do: compare(a, b) |> Kernel.==(:lt)
 
   @doc """
   True if *a* is larger than or equal to *b*
   """
-  def gte?(a, b), do: compare(a, b) |> Kernel.>=(0)
+  def gte?(a, b), do: compare(a, b) in [:eq, :gt]
 
   @doc """
   True if *a* is smaller than or equal to *b*
   """
-  def lte?(a, b), do: compare(a, b) |> Kernel.<=(0)
+  def lte?(a, b), do: compare(a, b) in [:lt, :eq]
+
+  @doc """
+  True if *a* is equal to *b*?
+  """
+  def equal?(a, b), do: compare(a, b) == :eq
+
 
   @doc """
   Compares two numbers and returns true if the first equal to the second.
