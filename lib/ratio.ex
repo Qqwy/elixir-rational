@@ -427,9 +427,9 @@ defmodule Ratio do
   # Compares any other value that Elixir/Erlang can understand.
   def compare(a, b) do
     cond do
-      a > b ->  1
-      a < b -> -1
-      a == b -> 0
+      a > b ->  :gt
+      a < b ->  :lt
+      a == b -> :eq
       true  ->  raise ComparisonError, "These things cannot be compared: #{a} , #{b}"
     end
   end
@@ -437,22 +437,27 @@ defmodule Ratio do
   @doc """
   True if *a* is larger than or equal to *b*
   """
-  def gt?(a, b), do: compare(a, b) ==  1
+  def gt?(a, b), do: compare(a, b) ==  :gt
 
   @doc """
   True if *a* is smaller than *b*
   """
-  def lt?(a, b), do: compare(a, b) == -1
+  def lt?(a, b), do: compare(a, b) == :lt
 
   @doc """
   True if *a* is larger than or equal to *b*
   """
-  def gte?(a, b), do: compare(a, b) >=  0
+  def gte?(a, b), do: compare(a, b) in [:eq, :gt]
 
   @doc """
   True if *a* is smaller than or equal to *b*
   """
-  def lte?(a, b), do: compare(a, b) <=  0
+  def lte?(a, b), do: compare(a, b) in [:lt, :eq]
+
+  @doc """
+  True if *a* is equal to *b*?
+  """
+  def equal?(a, b), do: compare(a, b) == :eq
 
   @doc """
   returns *x* to the *n* th power.
