@@ -40,6 +40,15 @@ The normal arithmetic-operators are overloaded by Ratio to allow arithmetic with
       iex> (2 <|> 3) / (8 <|> 5)
       5 <|> 12
 
+The normal comparison-operators are also overloaded, with associated longhand variants.
+
+      iex> 0.1 == (1 <|> 10)
+      true
+      iex> 10 < (1 <|> 10)
+      false
+      iex> 10 >= (1 <|> 10)
+      true
+
 Floats are converted to Rational numbers before performing arithmetic. This allows for more precise results.
 
       iex> Kernel.-(2.3, 0.3)
@@ -75,6 +84,11 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
       # Does not override *, /, -, +, div, abs
       use Ratio, override_math: false
+
+  If you do not want to override the Kernel's built-in comparison operators, use
+
+      # Does not override ==, <, >, <=, >=
+      use Ratio, comparison: false
 
   If you just do not want to override the Kernel's built-in *inline* math operators, use `use Ratio, inline_math: false`
 
