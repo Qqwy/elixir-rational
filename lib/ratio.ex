@@ -35,11 +35,12 @@ defmodule Ratio do
 
   @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
   @overridden_math_functions [div: 2, abs: 1] #++ @inline_math_functions
+  @comparison_functions [==: 2, <=: 2, >=: 2, <: 2, >: 2]
   @rational_operator [<|>: 2]
   @never_export_these_functions [to_float: 1, new: 2]
 
   # TODO: Find out why it is not possible to use @-annotations in this except clause.
-  import Kernel, except: [div: 2, abs: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
+  import Kernel, except: [div: 2, abs: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1, ==: 2, <=: 2, >=: 2, <: 2, >: 2]
 
 
   @behaviour Numeric # Ratio is fully `Numbers`-compatible.
@@ -47,6 +48,7 @@ defmodule Ratio do
   defmacro __using__(opts) do
     override_math   = Keyword.get(opts, :override_math, true)
     use_inline_math = Keyword.get(opts, :inline_math, true)
+    use_comparison  = Keyword.get(opts, :comparison, true)
     use_operator    = Keyword.get(opts, :operator, true)
 
     overridden_kernel_functions = cond do
@@ -57,6 +59,8 @@ defmodule Ratio do
       true ->
         []
     end
+    overridden_kernel_functions = if use_comparison, do: overridden_kernel_functions ++ @comparison_functions, else: overridden_kernel_functions
+
     hidden_functions = (@overridden_math_functions ++ @inline_math_functions) -- overridden_kernel_functions
 
     hidden_functions =
@@ -374,6 +378,8 @@ defmodule Ratio do
 
   def div(a, b) when is_number(a) and is_integer(b), do: a <|> b
 
+  def div(a, b) when is_number(a) and is_float(b), do: div(a, Ratio.FloatConversion.float_to_rational(b))
+
   def div(%Ratio{numerator: numerator, denominator: denominator}, number) when is_number(number) do
     numerator <|> Kernel.*(denominator, number)
   end
@@ -399,6 +405,8 @@ defmodule Ratio do
       1 <|> 6
       iex> (2 <|> 3) / (8 <|> 5)
       5 <|> 12
+      iex> 2.0 / 1.0
+      2
 
   """
   def a / b
@@ -427,32 +435,116 @@ defmodule Ratio do
   # Compares any other value that Elixir/Erlang can understand.
   def compare(a, b) do
     cond do
-      a > b ->  1
-      a < b -> -1
-      a == b -> 0
+      Kernel.>(a, b) ->  1
+      Kernel.<(a, b) -> -1
+      Kernel.==(a, b) -> 0
       true  ->  raise ComparisonError, "These things cannot be compared: #{a} , #{b}"
     end
   end
+  @doc """
+  True if *a* is equal to *b*
+  """
+  def eq?(a, b), do: compare(a, b) |> Kernel.==(0)
 
   @doc """
   True if *a* is larger than or equal to *b*
   """
-  def gt?(a, b), do: compare(a, b) ==  1
+  def gt?(a, b), do: compare(a, b) |> Kernel.==(1)
 
   @doc """
   True if *a* is smaller than *b*
   """
-  def lt?(a, b), do: compare(a, b) == -1
+  def lt?(a, b), do: compare(a, b) |> Kernel.==(-1)
 
   @doc """
   True if *a* is larger than or equal to *b*
   """
-  def gte?(a, b), do: compare(a, b) >=  0
+  def gte?(a, b), do: compare(a, b) |> Kernel.>=(0)
 
   @doc """
   True if *a* is smaller than or equal to *b*
   """
-  def lte?(a, b), do: compare(a, b) <=  0
+  def lte?(a, b), do: compare(a, b) |> Kernel.<=(0)
+
+  @doc """
+  Compares two numbers and returns true if the first equal to the second.
+
+  ## Examples
+
+    iex> 2 == 3
+    false
+    iex> 5 == 5
+    true
+    iex> 2.3 == 0.3
+    false
+    iex> 0.1 == (1 <|> 10)
+    true
+  """
+  def a == b, do: eq?(a, b)
+
+  @doc """
+  Compares two numbers and returns true if the first is less than the second.
+
+  ## Examples
+
+      iex> 2 < 3
+      true
+      iex> 5 < 5
+      false
+      iex> 2.3 < 0.3
+      false
+      iex> 10 < (1 <|> 10)
+      false
+  """
+  def a < b, do: lt?(a, b)
+
+  @doc """
+  Compares two numbers and returns true if the first is less than or equal to the second.
+
+  ## Examples
+
+      iex> 2 <= 3
+      true
+      iex> 5 <= 5
+      true
+      iex> 2.3 <= 0.3
+      false
+      iex> 10 <= (1 <|> 10)
+      false
+  """
+  def a <= b, do: lte?(a, b)
+
+  @doc """
+  Compares two numbers and returns true if the first is greater than the second.
+
+  ## Examples
+
+      iex> 2 > 3
+      false
+      iex> 5 > 5
+      false
+      iex> 2.3 > 0.3
+      true
+      iex> 10 > (1 <|> 10)
+      true
+  """
+  def a > b, do: gt?(a, b)
+
+  @doc """
+  Compares two numbers and returns true if the first is greater than or equal to the second.
+
+  ## Examples
+
+      iex> 2 >= 3
+      false
+      iex> 5 >= 5
+      true
+      iex> 2.3 >= 0.3
+      true
+      iex> 10 >= (1 <|> 10)
+      true
+  """
+  def a >= b, do: gte?(a, b)
 
   @doc """
   returns *x* to the *n* th power.
@@ -490,7 +582,7 @@ defmodule Ratio do
   defp do_pow(_x, 0, y), do: y
   defp do_pow(x, 1, y), do: x * y
   defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(1 / x, Kernel.-(n), y)
-  defp do_pow(x, n, y) when rem(n, 2) == 0, do: do_pow(x * x, div(n, 2), y)
+  defp do_pow(x, n, y) when rem(n, 2) |> Kernel.==(0), do: do_pow(x * x, div(n, 2), y)
   defp do_pow(x, n, y), do: do_pow(x * x, div((n - 1), 2), x * y)
 
 
@@ -546,7 +638,7 @@ defmodule Ratio do
       "10 <|> 7"
   """
   def to_string(rational)
-  def to_string(%Ratio{numerator: numerator, denominator: denominator}) when denominator == 1 do
+  def to_string(%Ratio{numerator: numerator, denominator: denominator}) when denominator |> Kernel.==(1) do
     "#{numerator}"
   end
   def to_string(%Ratio{numerator: numerator, denominator: denominator}) do
