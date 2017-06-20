@@ -48,7 +48,7 @@ defmodule Ratio do
   defmacro __using__(opts) do
     override_math   = Keyword.get(opts, :override_math, true)
     use_inline_math = Keyword.get(opts, :inline_math, true)
-    use_comparison  = Keyword.get(opts, :comparison, true)
+    use_comparison  = Keyword.get(opts, :comparison, false)
     use_operator    = Keyword.get(opts, :operator, true)
 
     overridden_kernel_functions = cond do
@@ -61,7 +61,7 @@ defmodule Ratio do
     end
     overridden_kernel_functions = if use_comparison, do: overridden_kernel_functions ++ @comparison_functions, else: overridden_kernel_functions
 
-    hidden_functions = (@overridden_math_functions ++ @inline_math_functions) -- overridden_kernel_functions
+    hidden_functions = (@overridden_math_functions ++ @inline_math_functions ++ @comparison_functions) -- overridden_kernel_functions
 
     hidden_functions =
       if !use_operator do
@@ -444,7 +444,7 @@ defmodule Ratio do
   @doc """
   True if *a* is equal to *b*
   """
-  def eq?(a, b), do: compare(a, b) |> Kernel.==(0)
+  def eq?(a, b), do: compare(a, b) |> Kernel.==(:eq)
 
   @doc """
   True if *a* is larger than or equal to *b*
@@ -469,7 +469,7 @@ defmodule Ratio do
   @doc """
   True if *a* is equal to *b*?
   """
-  def equal?(a, b), do: compare(a, b) == :eq
+  def equal?(a, b), do: compare(a, b) |> Kernel.==(:eq)
 
 
   @doc """
