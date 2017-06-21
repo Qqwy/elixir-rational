@@ -431,7 +431,6 @@ defmodule Ratio do
     compare(Kernel.*(a, denominator), numerator)
   end
 
-
   # Compares any other value that Elixir/Erlang can understand.
   def compare(a, b) do
     cond do
@@ -470,7 +469,6 @@ defmodule Ratio do
   True if *a* is equal to *b*?
   """
   def equal?(a, b), do: compare(a, b) |> Kernel.==(:eq)
-
 
   @doc """
   Compares two numbers and returns true if the first equal to the second.
