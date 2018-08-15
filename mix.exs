@@ -3,8 +3,8 @@ defmodule Rational.Mixfile do
 
   def project do
     [app: :ratio,
-     version: "2.1.0",
-     elixir: "~> 1.2",
+     version: "2.1.1",
+     elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps(),
@@ -48,7 +48,7 @@ defmodule Rational.Mixfile do
       files: ["lib", "mix.exs", "README*",  "LICENSE*"],
       maintainers: ["Qqwy/WM"],
       licenses: ["MIT"],
-      links: %{github: "https://github.com/qqwy/elixir-rational"} 
+      links: %{github: "https://github.com/qqwy/elixir-rational"}
     ]
   end
 

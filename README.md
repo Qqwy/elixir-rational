@@ -103,6 +103,9 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
 
 ## Changelog
+- 2.1.1 Fixes implementation of `floor` and `ceil` which was counter-intuitive for negative numbers (it now correctly rounds towards negative infinity). 
+  - Drops support for Elixir versions older than 1.4, because of use of `Integer.floor_div`.
+  - First version to support new Erlang versions (20 and onward) that have native `floor` and `ceil` functions.
 - 2.1.0 Adds optional overloaded comparison operators.
 - 2.0.0 Breaking change: Brought `Ratio.compare/2` in line with Elixir's comparison function guideline, to return `:lt | :eq | :gt`. (This used to be `-1 | 0 | 1`).
 - 1.2.9 Improved documentation. (Thanks, @morontt!)

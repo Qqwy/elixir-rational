@@ -34,13 +34,12 @@ defmodule Ratio do
   """
 
   @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
-  @overridden_math_functions [div: 2, abs: 1] #++ @inline_math_functions
+  @overridden_math_functions [div: 2, abs: 1, floor: 1, ceil: 1] #++ @inline_math_functions
   @comparison_functions [==: 2, <=: 2, >=: 2, <: 2, >: 2]
   @rational_operator [<|>: 2]
   @never_export_these_functions [to_float: 1, new: 2]
 
-  # TODO: Find out why it is not possible to use @-annotations in this except clause.
-  import Kernel, except: [div: 2, abs: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1, ==: 2, <=: 2, >=: 2, <: 2, >: 2]
+  import Kernel, except: [div: 2, abs: 1, floor: 1, ceil: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1, ==: 2, <=: 2, >=: 2, <: 2, >: 2]
 
 
   @behaviour Numeric # Ratio is fully `Numbers`-compatible.
@@ -699,10 +698,36 @@ defmodule Ratio do
   defp gcd(0, b), do: abs(b)
   defp gcd(a, b), do: gcd(b, Kernel.rem(a,b))
 
+  @doc """
+  Rounds a number (rational, integer or float) to the largest whole number less than or equal to num.
+  For negative numbers, this means we are rounding towards negative infinity.
+
+
+  iex> Ratio.floor(Ratio.new(1, 2))
+  0
+  iex> Ratio.floor(Ratio.new(5, 4))
+  1
+  iex> Ratio.floor(Ratio.new(-3, 2))
+  -2
+
+  """
   def floor(num) when is_integer(num), do: num
   def floor(num) when is_float(num), do: Float.floor(num)
-  def floor(%Ratio{numerator: numerator, denominator: denominator}), do: Kernel.div(numerator, denominator)
+  def floor(%Ratio{numerator: numerator, denominator: denominator}), do: Integer.floor_div(numerator, denominator)
 
+  @doc """
+  Rounds a number (rational, integer or float) to the largest whole number larger than or equal to num.
+  For negative numbers, this means we are rounding towards negative infinity.
+
+
+  iex> Ratio.ceil(Ratio.new(1, 2))
+  1
+  iex> Ratio.ceil(Ratio.new(5, 4))
+  2
+  iex> Ratio.ceil(Ratio.new(-3, 2))
+  -1
+
+  """
   def ceil(num) when is_float(num), do: Float.ceil(num)
   def ceil(num) when is_integer(num), do: num
   def ceil(num = %Ratio{numerator: numerator, denominator: denominator}) do
