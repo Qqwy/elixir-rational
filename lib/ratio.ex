@@ -34,12 +34,12 @@ defmodule Ratio do
   """
 
   @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
-  @overridden_math_functions [div: 2, abs: 1, floor: 1] #++ @inline_math_functions
+  @overridden_math_functions [div: 2, abs: 1, floor: 1, ceil: 1] #++ @inline_math_functions
   @comparison_functions [==: 2, <=: 2, >=: 2, <: 2, >: 2]
   @rational_operator [<|>: 2]
   @never_export_these_functions [to_float: 1, new: 2]
 
-  import Kernel, except: [div: 2, abs: 1, floor: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1, ==: 2, <=: 2, >=: 2, <: 2, >: 2]
+  import Kernel, except: [div: 2, abs: 1, floor: 1, ceil: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1, ==: 2, <=: 2, >=: 2, <: 2, >: 2]
 
 
   @behaviour Numeric # Ratio is fully `Numbers`-compatible.
