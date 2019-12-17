@@ -35,7 +35,7 @@ defmodule Ratio do
 
   @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
   # ++ @inline_math_functions
-  @overridden_math_functions [div: 2, abs: 1, floor: 1, ceil: 1]
+  @overridden_math_functions [div: 2, abs: 1, floor: 1, ceil: 1, trunc: 1]
   @comparison_functions [==: 2, <=: 2, >=: 2, <: 2, >: 2]
   @rational_operator [<|>: 2]
   @never_export_these_functions [to_float: 1, new: 2]
@@ -46,6 +46,7 @@ defmodule Ratio do
       abs: 1,
       floor: 1,
       ceil: 1,
+      trunc: 1,
       *: 2,
       /: 2,
       -: 2,
@@ -780,6 +781,28 @@ defmodule Ratio do
     else
       floor + 1
     end
+  end
+
+  @doc """
+  Returns the integer part of number.
+
+  ## Examples
+
+      iex> Ratio.trunc(1.7)
+      1
+      iex> Ratio.trunc(-1.7)
+      -1
+      iex> Ratio.trunc(3)
+      3
+      iex> Ratio.trunc(Ratio.new(5, 2))
+      2
+  """
+  @spec trunc(t | number) :: integer
+  def trunc(num) when is_integer(num), do: num
+  def trunc(num) when is_float(num), do: Kernel.trunc(num)
+
+  def trunc(%Ratio{numerator: numerator, denominator: denominator}) do
+    Kernel.div(numerator, denominator)
   end
 
   # So they can without problem be overridden by other libraries that extend on this one.
