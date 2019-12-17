@@ -38,7 +38,7 @@ defmodule Ratio do
   @overridden_math_functions [div: 2, abs: 1, floor: 1, ceil: 1, trunc: 1]
   @comparison_functions [==: 2, <=: 2, >=: 2, <: 2, >: 2]
   @rational_operator [<|>: 2]
-  @never_export_these_functions [to_float: 1, new: 2]
+  @never_export_these_functions [to_float: 1, to_float_err: 1, new: 2]
 
   import Kernel,
     except: [
@@ -640,6 +640,26 @@ defmodule Ratio do
     do: Kernel./(numerator, denominator)
 
   def to_float(number), do: :erlang.float(number)
+
+  @doc """
+  Returns a tuple, where the first element is the result of `to_float(number)` and
+  the second is a conversion error.
+
+  The conversion error is calculated by subtracting the original number from the
+  conversion result.
+
+  ## Examples
+
+      iex> Ratio.to_float_err(Ratio.new(1, 2))
+      {0.5, 0}
+      iex> Ratio.to_float_err(Ratio.new(2, 3))
+      {0.6666666666666666, 1 <|> 30000000000}
+  """
+  @spec to_float_err(t | number) :: {float, error} when error: t | number
+  def to_float_err(number) do
+    float = to_float(number)
+    {float, float - number}
+  end
 
   @doc """
   Check if a number is a rational number.
