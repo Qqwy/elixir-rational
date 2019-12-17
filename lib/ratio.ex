@@ -34,37 +34,65 @@ defmodule Ratio do
   """
 
   @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
-  @overridden_math_functions [div: 2, abs: 1, floor: 1, ceil: 1] #++ @inline_math_functions
+  # ++ @inline_math_functions
+  @overridden_math_functions [div: 2, abs: 1, floor: 1, ceil: 1, trunc: 1]
   @comparison_functions [==: 2, <=: 2, >=: 2, <: 2, >: 2]
   @rational_operator [<|>: 2]
-  @never_export_these_functions [to_float: 1, new: 2]
+  @never_export_these_functions [to_float: 1, to_float_err: 1, new: 2]
 
-  import Kernel, except: [div: 2, abs: 1, floor: 1, ceil: 1, *: 2, /: 2, -: 2, -: 1, +: 2, +: 1, ==: 2, <=: 2, >=: 2, <: 2, >: 2]
+  import Kernel,
+    except: [
+      div: 2,
+      abs: 1,
+      floor: 1,
+      ceil: 1,
+      trunc: 1,
+      *: 2,
+      /: 2,
+      -: 2,
+      -: 1,
+      +: 2,
+      +: 1,
+      ==: 2,
+      <=: 2,
+      >=: 2,
+      <: 2,
+      >: 2
+    ]
 
-
-  @behaviour Numeric # Ratio is fully `Numbers`-compatible.
+  # Ratio is fully `Numbers`-compatible.
+  @behaviour Numeric
 
   defmacro __using__(opts) do
-    override_math   = Keyword.get(opts, :override_math, true)
+    override_math = Keyword.get(opts, :override_math, true)
     use_inline_math = Keyword.get(opts, :inline_math, true)
-    use_comparison  = Keyword.get(opts, :comparison, false)
-    use_operator    = Keyword.get(opts, :operator, true)
+    use_comparison = Keyword.get(opts, :comparison, false)
+    use_operator = Keyword.get(opts, :operator, true)
 
-    overridden_kernel_functions = cond do
-      use_inline_math && override_math ->
-        @overridden_math_functions ++ @inline_math_functions
-      override_math ->
-        @overridden_math_functions
-      true ->
-        []
-    end
-    overridden_kernel_functions = if use_comparison, do: overridden_kernel_functions ++ @comparison_functions, else: overridden_kernel_functions
+    overridden_kernel_functions =
+      cond do
+        use_inline_math && override_math ->
+          @overridden_math_functions ++ @inline_math_functions
 
-    hidden_functions = (@overridden_math_functions ++ @inline_math_functions ++ @comparison_functions) -- overridden_kernel_functions
+        override_math ->
+          @overridden_math_functions
+
+        true ->
+          []
+      end
+
+    overridden_kernel_functions =
+      if use_comparison,
+        do: overridden_kernel_functions ++ @comparison_functions,
+        else: overridden_kernel_functions
+
+    hidden_functions =
+      (@overridden_math_functions ++ @inline_math_functions ++ @comparison_functions) --
+        overridden_kernel_functions
 
     hidden_functions =
       if !use_operator do
-         hidden_functions ++ @rational_operator
+        hidden_functions ++ @rational_operator
       else
         hidden_functions
       end
@@ -141,7 +169,7 @@ defmodule Ratio do
     div(numerator, Ratio.FloatConversion.float_to_rational(denominator))
   end
 
-  def (numerator=%Ratio{}) <|> (denominator=%Ratio{}) do
+  def (numerator = %Ratio{}) <|> (denominator = %Ratio{}) do
     div(numerator, denominator)
   end
 
@@ -175,8 +203,9 @@ defmodule Ratio do
       5 <|> 2
   """
   def abs(number) when is_number(number), do: Kernel.abs(number)
-  def abs(%Ratio{numerator: numerator, denominator: denominator}), do: Kernel.abs(numerator) <|> denominator
 
+  def abs(%Ratio{numerator: numerator, denominator: denominator}),
+    do: Kernel.abs(numerator) <|> denominator
 
   @doc """
   Returns the sign of the given number (which might be an integer, float or Rational)
@@ -200,7 +229,10 @@ defmodule Ratio do
 
   """
   def numerator(number) when is_integer(number), do: number
-  def numerator(number) when is_float(number), do: numerator(Ratio.FloatConversion.float_to_rational(number))
+
+  def numerator(number) when is_float(number),
+    do: numerator(Ratio.FloatConversion.float_to_rational(number))
+
   def numerator(%Ratio{numerator: numerator}), do: numerator
 
   @doc """
@@ -209,7 +241,6 @@ defmodule Ratio do
   """
   def denominator(number) when is_number(number), do: 1
   def denominator(%Ratio{denominator: denominator}), do: denominator
-
 
   @doc """
   Longhand for `Ratio.+/2`
@@ -222,17 +253,19 @@ defmodule Ratio do
 
   def add(a, b) when is_float(b), do: add(a, Ratio.FloatConversion.float_to_rational(b))
 
-  def add(a, %Ratio{numerator: b, denominator: lcm}) when is_integer(a), do: Kernel.+(a * lcm, b) <|> lcm
-  def add(%Ratio{numerator: a, denominator: lcm}, b) when is_integer(b), do: Kernel.+(b * lcm, a) <|> lcm
+  def add(a, %Ratio{numerator: b, denominator: lcm}) when is_integer(a),
+    do: Kernel.+(a * lcm, b) <|> lcm
+
+  def add(%Ratio{numerator: a, denominator: lcm}, b) when is_integer(b),
+    do: Kernel.+(b * lcm, a) <|> lcm
 
   def add(%Ratio{numerator: a, denominator: lcm}, %Ratio{numerator: c, denominator: lcm}) do
     Kernel.+(a, c) <|> lcm
   end
 
   def add(%Ratio{numerator: a, denominator: b}, %Ratio{numerator: c, denominator: d}) do
-    Kernel.+((a * d), (c * b)) <|> (b * d)
+    Kernel.+(a * d, c * b) <|> (b * d)
   end
-
 
   @doc """
   Adds two numbers, one or both of which might be integers, floats or rationals.
@@ -312,44 +345,47 @@ defmodule Ratio do
       iex> -123.456
       -15432 <|> 125
   """
-  def (-num) when is_integer(num), do: Kernel.-(num)
+  def -num when is_integer(num), do: Kernel.-(num)
 
-  def (-num), do: negate(num)
-
+  def -num, do: negate(num)
 
   @doc """
   Unary plus. Returns *num*.
   Coerces the number to a rational if it is a float.
   """
-  def (+num) when is_integer(num), do: Kernel.+(num)
-  def (+num) when is_float(num), do: Ratio.FloatConversion.float_to_rational(num)
-  def (+num), do: num
-
-
+  def +num when is_integer(num), do: Kernel.+(num)
+  def +num when is_float(num), do: Ratio.FloatConversion.float_to_rational(num)
+  def +num, do: num
 
   @doc """
   Longhand for `Ratio.*/2`
   """
   def mult(number1, number2)
-  def mult(number1, number2) when is_number(number1) and is_number(number2), do: Kernel.*(number1, number2)
 
-  def mult(%Ratio{numerator: numerator, denominator: denominator}, number) when is_number(number) do
-    Kernel.*(numerator, number) <|> (denominator)
+  def mult(number1, number2) when is_number(number1) and is_number(number2),
+    do: Kernel.*(number1, number2)
+
+  def mult(%Ratio{numerator: numerator, denominator: denominator}, number)
+      when is_number(number) do
+    Kernel.*(numerator, number) <|> denominator
   end
 
-  def mult(number, %Ratio{numerator: numerator, denominator: denominator}) when is_number(number) do
-    Kernel.*(numerator, number) <|> (denominator)
+  def mult(number, %Ratio{numerator: numerator, denominator: denominator})
+      when is_number(number) do
+    Kernel.*(numerator, number) <|> denominator
   end
 
-
-  def mult(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{numerator: numerator2, denominator: denominator2}) do
+  def mult(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{
+        numerator: numerator2,
+        denominator: denominator2
+      }) do
     Kernel.*(numerator1, numerator2) <|> Kernel.*(denominator1, denominator2)
   end
 
   @doc false
   # TODO Remove in future version.
   def mul(number1, number2) do
-    IO.puts "Warning: `Ratio.mul/2` is deprecated. Use `Ratio.mult/2` instead."
+    IO.puts("Warning: `Ratio.mul/2` is deprecated. Use `Ratio.mult/2` instead.")
     mult(number1, number2)
   end
 
@@ -377,19 +413,24 @@ defmodule Ratio do
 
   def div(a, b) when is_number(a) and is_integer(b), do: a <|> b
 
-  def div(a, b) when is_number(a) and is_float(b), do: div(a, Ratio.FloatConversion.float_to_rational(b))
+  def div(a, b) when is_number(a) and is_float(b),
+    do: div(a, Ratio.FloatConversion.float_to_rational(b))
 
-  def div(%Ratio{numerator: numerator, denominator: denominator}, number) when is_number(number) do
+  def div(%Ratio{numerator: numerator, denominator: denominator}, number)
+      when is_number(number) do
     numerator <|> Kernel.*(denominator, number)
   end
 
   # 6 / (2 <|> 3) == 6 * (3 <|> 2)
-  def div(number, %Ratio{numerator: numerator, denominator: denominator}) when is_number(number) do
+  def div(number, %Ratio{numerator: numerator, denominator: denominator})
+      when is_number(number) do
     mult(number, denominator <|> numerator)
   end
 
-
-  def div(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{numerator: numerator2, denominator: denominator2}) do
+  def div(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{
+        numerator: numerator2,
+        denominator: denominator2
+      }) do
     Kernel.*(numerator1, denominator2) <|> Kernel.*(denominator1, numerator2)
   end
 
@@ -410,7 +451,7 @@ defmodule Ratio do
   """
   def a / b
 
-  def a / b when is_number(a) and is_integer(b), do:  a <|> b
+  def a / b when is_number(a) and is_integer(b), do: a <|> b
 
   def a / b, do: div(a, b)
 
@@ -433,12 +474,13 @@ defmodule Ratio do
   # Compares any other value that Elixir/Erlang can understand.
   def compare(a, b) do
     cond do
-      Kernel.>(a, b) ->  :gt
+      Kernel.>(a, b) -> :gt
       Kernel.<(a, b) -> :lt
       Kernel.==(a, b) -> :eq
-      true  ->  raise ComparisonError, "These things cannot be compared: #{a} , #{b}"
+      true -> raise ComparisonError, "These things cannot be compared: #{a} , #{b}"
     end
   end
+
   @doc """
   True if *a* is equal to *b*
   """
@@ -568,10 +610,10 @@ defmodule Ratio do
       iex>pow(3 <|> 2, 10)
       59049 <|> 1024
   """
-  @spec pow(number()|Ratio.t(), pos_integer()) :: number() | Ratio.t()
+  @spec pow(number() | Ratio.t(), pos_integer()) :: number() | Ratio.t()
   def pow(x, n)
 
-  #Convert Float to Rational.
+  # Convert Float to Rational.
   def pow(x, n) when is_float(x), do: pow(Ratio.FloatConversion.float_to_rational(x), n)
 
   # Small powers
@@ -586,20 +628,38 @@ defmodule Ratio do
   defp do_pow(x, 1, y), do: x * y
   defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(1 / x, Kernel.-(n), y)
   defp do_pow(x, n, y) when rem(n, 2) |> Kernel.==(0), do: do_pow(x * x, div(n, 2), y)
-  defp do_pow(x, n, y), do: do_pow(x * x, div((n - 1), 2), x * y)
-
-
+  defp do_pow(x, n, y), do: do_pow(x * x, div(n - 1, 2), x * y)
 
   @doc """
   Converts the given *number* to a Float. As floats do not have arbitrary precision, this operation is generally not reversible.
 
   Not imported when calling `use Ratio`, so always call it as `Rational.to_float(number)`
   """
-  @spec to_float(Ratio.t | number) :: float
-  def to_float(%Ratio{numerator: numerator, denominator: denominator}), do: Kernel./(numerator, denominator)
+  @spec to_float(Ratio.t() | number) :: float
+  def to_float(%Ratio{numerator: numerator, denominator: denominator}),
+    do: Kernel./(numerator, denominator)
+
   def to_float(number), do: :erlang.float(number)
 
+  @doc """
+  Returns a tuple, where the first element is the result of `to_float(number)` and
+  the second is a conversion error.
 
+  The conversion error is calculated by subtracting the original number from the
+  conversion result.
+
+  ## Examples
+
+      iex> Ratio.to_float_err(Ratio.new(1, 2))
+      {0.5, 0}
+      iex> Ratio.to_float_err(Ratio.new(2, 3))
+      {0.6666666666666666, 1 <|> 30000000000}
+  """
+  @spec to_float_err(t | number) :: {float, error} when error: t | number
+  def to_float_err(number) do
+    float = to_float(number)
+    {float, float - number}
+  end
 
   @doc """
   Check if a number is a rational number.
@@ -630,7 +690,6 @@ defmodule Ratio do
   def is_rational?(%Ratio{}), do: true
   def is_rational?(_), do: false
 
-
   @doc """
   Returns a binstring representation of the Rational number.
   If the denominator is `1`, it will be printed as a normal (integer) number.
@@ -641,9 +700,12 @@ defmodule Ratio do
       "10 <|> 7"
   """
   def to_string(rational)
-  def to_string(%Ratio{numerator: numerator, denominator: denominator}) when denominator |> Kernel.==(1) do
+
+  def to_string(%Ratio{numerator: numerator, denominator: denominator})
+      when denominator |> Kernel.==(1) do
     "#{numerator}"
   end
+
   def to_string(%Ratio{numerator: numerator, denominator: denominator}) do
     "#{numerator} <|> #{denominator}"
   end
@@ -659,7 +721,6 @@ defmodule Ratio do
       Ratio.to_string(rational)
     end
   end
-
 
   # Simplifies the Rational to its most basic form.
   # Which might result in an integer.
@@ -691,12 +752,11 @@ defmodule Ratio do
   defp remove_denominator_if_integer(%Ratio{numerator: numerator, denominator: 1}), do: numerator
   defp remove_denominator_if_integer(rational), do: rational
 
-
   # Calculates the Greatest Common denominator of two numbers.
   defp gcd(a, 0), do: abs(a)
 
   defp gcd(0, b), do: abs(b)
-  defp gcd(a, b), do: gcd(b, Kernel.rem(a,b))
+  defp gcd(a, b), do: gcd(b, Kernel.rem(a, b))
 
   @doc """
   Rounds a number (rational, integer or float) to the largest whole number less than or equal to num.
@@ -713,7 +773,9 @@ defmodule Ratio do
   """
   def floor(num) when is_integer(num), do: num
   def floor(num) when is_float(num), do: Float.floor(num)
-  def floor(%Ratio{numerator: numerator, denominator: denominator}), do: Integer.floor_div(numerator, denominator)
+
+  def floor(%Ratio{numerator: numerator, denominator: denominator}),
+    do: Integer.floor_div(numerator, denominator)
 
   @doc """
   Rounds a number (rational, integer or float) to the largest whole number larger than or equal to num.
@@ -730,15 +792,39 @@ defmodule Ratio do
   """
   def ceil(num) when is_float(num), do: Float.ceil(num)
   def ceil(num) when is_integer(num), do: num
+
   def ceil(num = %Ratio{numerator: numerator, denominator: denominator}) do
     floor = floor(num)
-    if (numerator <|> denominator) == floor do
+
+    if numerator <|> denominator == floor do
       floor
     else
       floor + 1
     end
   end
 
+  @doc """
+  Returns the integer part of number.
 
-  defoverridable @overridden_math_functions # So they can without problem be overridden by other libraries that extend on this one.
+  ## Examples
+
+      iex> Ratio.trunc(1.7)
+      1
+      iex> Ratio.trunc(-1.7)
+      -1
+      iex> Ratio.trunc(3)
+      3
+      iex> Ratio.trunc(Ratio.new(5, 2))
+      2
+  """
+  @spec trunc(t | number) :: integer
+  def trunc(num) when is_integer(num), do: num
+  def trunc(num) when is_float(num), do: Kernel.trunc(num)
+
+  def trunc(%Ratio{numerator: numerator, denominator: denominator}) do
+    Kernel.div(numerator, denominator)
+  end
+
+  # So they can without problem be overridden by other libraries that extend on this one.
+  defoverridable @overridden_math_functions
 end
