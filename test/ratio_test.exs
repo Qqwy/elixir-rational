@@ -9,8 +9,8 @@ defmodule RatioTest do
   end
 
   test "reject _ <|> 0" do
-    assert_raise ArithmeticError, fn ->  1 <|> 0 end
-    assert_raise ArithmeticError, fn ->  1234 <|> 0 end
+    assert_raise ArithmeticError, fn -> 1 <|> 0 end
+    assert_raise ArithmeticError, fn -> 1234 <|> 0 end
   end
 
   test "inspect protocol" do

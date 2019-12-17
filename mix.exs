@@ -2,16 +2,17 @@ defmodule Rational.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :ratio,
-     version: "2.2.2",
-     elixir: "~> 1.4",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     deps: deps(),
-     package: package(),
-     description: description(),
-     source_url: "https://github.com/qqwy/elixir-rational"
-   ]
+    [
+      app: :ratio,
+      version: "2.2.2",
+      elixir: "~> 1.4",
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
+      deps: deps(),
+      package: package(),
+      description: description(),
+      source_url: "https://github.com/qqwy/elixir-rational"
+    ]
   end
 
   # Configuration for the OTP application
@@ -37,15 +38,18 @@ defmodule Rational.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:earmark, ">= 1.0.0", only: [:dev]}, # Markdown, dependency of ex_doc
-      {:ex_doc, "~> 0.20", only: [:dev]},    # Documentation for Hex.pm
-      {:numbers, "~> 5.1.0"} # Generic arithmetic dispatching.
+      # Markdown, dependency of ex_doc
+      {:earmark, ">= 1.0.0", only: [:dev]},
+      # Documentation for Hex.pm
+      {:ex_doc, "~> 0.20", only: [:dev]},
+      # Generic arithmetic dispatching.
+      {:numbers, "~> 5.1.0"}
     ]
   end
 
   defp package do
     [
-      files: ["lib", "mix.exs", "README*",  "LICENSE*"],
+      files: ["lib", "mix.exs", "README*", "LICENSE*"],
       maintainers: ["Qqwy/WM"],
       licenses: ["MIT"],
       links: %{github: "https://github.com/qqwy/elixir-rational"}
@@ -60,6 +64,4 @@ defmodule Rational.Mixfile do
 
   # Can be overridden to allow different float precisions.
   Application.put_env(:ratio, :max_float_to_rational_digits, 10)
-
-
 end
