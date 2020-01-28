@@ -44,7 +44,9 @@ defmodule Rational.Mixfile do
       {:ex_doc, "~> 0.20", only: [:dev]},
       # Generic arithmetic dispatching.
       {:numbers, "~> 5.1.0"},
-      {:decimal, "~> 1.9-rc or ~> 2.0", override: true}
+
+      # If Decimal number support is required
+      {:decimal, "~> 1.6 or ~> 2.0", optional: true}
     ]
   end
 

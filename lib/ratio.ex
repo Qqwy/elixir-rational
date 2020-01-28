@@ -140,6 +140,11 @@ defmodule Ratio do
 
   As Float-parsing is done by converting floats to a digit-list representation first, this is also far slower than when using integers or rationals.
 
+  ## Decimals
+
+  To use `Decimal` parameters, the [decimal](https://hex.pm/packages/decimal) library must
+  be configured in `mix.exs`.
+
   ## Examples
 
       iex> 1 <|> 2
@@ -173,28 +178,30 @@ defmodule Ratio do
     div(numerator, denominator)
   end
 
-  def (numerator = %Decimal{}) <|> (denominator = %Decimal{}) do
-    Ratio.DecimalConversion.decimal_to_rational(numerator)
-    |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
-  end
+  if Code.ensure_loaded?(Decimal) do
+    def (numerator = %Decimal{}) <|> (denominator = %Decimal{}) do
+      Ratio.DecimalConversion.decimal_to_rational(numerator)
+      |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
+    end
 
-  def (numerator = %Decimal{}) <|> denominator when is_float(denominator) do
-    Ratio.DecimalConversion.decimal_to_rational(numerator)
-    |> div(Ratio.FloatConversion.float_to_rational(denominator))
-  end
+    def (numerator = %Decimal{}) <|> denominator when is_float(denominator) do
+      Ratio.DecimalConversion.decimal_to_rational(numerator)
+      |> div(Ratio.FloatConversion.float_to_rational(denominator))
+    end
 
-  def numerator <|> (denominator = %Decimal{}) when is_float(numerator) do
-    Ratio.FloatConversion.float_to_rational(numerator)
-    |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
-  end
+    def numerator <|> (denominator = %Decimal{}) when is_float(numerator) do
+      Ratio.FloatConversion.float_to_rational(numerator)
+      |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
+    end
 
-  def (numerator = %Decimal{}) <|> denominator when is_integer(denominator) do
-    Ratio.DecimalConversion.decimal_to_rational(numerator)
-    |> div(denominator)
-  end
+    def (numerator = %Decimal{}) <|> denominator when is_integer(denominator) do
+      Ratio.DecimalConversion.decimal_to_rational(numerator)
+      |> div(denominator)
+    end
 
-  def numerator <|> (denominator = %Decimal{}) when is_integer(numerator) do
-    div(Ratio.DecimalConversion.decimal_to_rational(numerator), denominator)
+    def numerator <|> (denominator = %Decimal{}) when is_integer(numerator) do
+      div(Ratio.DecimalConversion.decimal_to_rational(numerator), denominator)
+    end
   end
 
   def numerator <|> denominator do
@@ -206,6 +213,9 @@ defmodule Ratio do
   Useful when `<|>` is not available (for instance, when already in use by another module)
 
   Not imported when calling `use Ratio`, so always call it as `Ratio.new(a, b)`
+
+  To use `Decimal` parameters, the [decimal](https://hex.pm/packages/decimal) library must
+  be configured in `mix.exs`.
 
   ## Examples
 
@@ -221,17 +231,19 @@ defmodule Ratio do
   """
   def new(numerator, denominator \\ 1)
 
-  def new(%Decimal{} = decimal, 1) do
-    Ratio.DecimalConversion.decimal_to_rational(decimal)
-  end
+  if Code.ensure_loaded?(Decimal) do
+    def new(%Decimal{} = decimal, 1) do
+      Ratio.DecimalConversion.decimal_to_rational(decimal)
+    end
 
-  def new(%Decimal{} = numerator, %Decimal{} = denominator) do
-    Ratio.DecimalConversion.decimal_to_rational(numerator) <|>
-    Ratio.DecimalConversion.decimal_to_rational(denominator)
-  end
+    def new(%Decimal{} = numerator, %Decimal{} = denominator) do
+      Ratio.DecimalConversion.decimal_to_rational(numerator) <|>
+      Ratio.DecimalConversion.decimal_to_rational(denominator)
+    end
 
-  def new(numerator, %Decimal{} = denominator) do
-    numerator <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
+    def new(numerator, %Decimal{} = denominator) do
+      numerator <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
+    end
   end
 
   def new(numerator, denominator) do
