@@ -60,9 +60,6 @@ defmodule Ratio do
       >: 2
     ]
 
-  # Ratio is fully `Numbers`-compatible.
-  @behaviour Numeric
-
   defmacro __using__(opts) do
     override_math = Keyword.get(opts, :override_math, true)
     use_inline_math = Keyword.get(opts, :inline_math, true)
