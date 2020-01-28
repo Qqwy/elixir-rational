@@ -137,6 +137,11 @@ defmodule Ratio do
 
   As Float-parsing is done by converting floats to a digit-list representation first, this is also far slower than when using integers or rationals.
 
+  ## Decimals
+
+  To use `Decimal` parameters, the [decimal](https://hex.pm/packages/decimal) library must
+  be configured in `mix.exs`.
+
   ## Examples
 
       iex> 1 <|> 2
@@ -170,6 +175,32 @@ defmodule Ratio do
     div(numerator, denominator)
   end
 
+  if Code.ensure_loaded?(Decimal) do
+    def (numerator = %Decimal{}) <|> (denominator = %Decimal{}) do
+      Ratio.DecimalConversion.decimal_to_rational(numerator)
+      |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
+    end
+
+    def (numerator = %Decimal{}) <|> denominator when is_float(denominator) do
+      Ratio.DecimalConversion.decimal_to_rational(numerator)
+      |> div(Ratio.FloatConversion.float_to_rational(denominator))
+    end
+
+    def numerator <|> (denominator = %Decimal{}) when is_float(numerator) do
+      Ratio.FloatConversion.float_to_rational(numerator)
+      |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
+    end
+
+    def (numerator = %Decimal{}) <|> denominator when is_integer(denominator) do
+      Ratio.DecimalConversion.decimal_to_rational(numerator)
+      |> div(denominator)
+    end
+
+    def numerator <|> (denominator = %Decimal{}) when is_integer(numerator) do
+      div(Ratio.DecimalConversion.decimal_to_rational(numerator), denominator)
+    end
+  end
+
   def numerator <|> denominator do
     div(numerator, denominator)
   end
@@ -180,6 +211,9 @@ defmodule Ratio do
 
   Not imported when calling `use Ratio`, so always call it as `Ratio.new(a, b)`
 
+  To use `Decimal` parameters, the [decimal](https://hex.pm/packages/decimal) library must
+  be configured in `mix.exs`.
+
   ## Examples
 
       iex> Ratio.new(1, 2)
@@ -188,8 +222,30 @@ defmodule Ratio do
       1 <|> 3
       iex> Ratio.new(1.5, 4)
       3 <|> 8
+      iex> Ratio.new(Decimal.new("123.456"))
+      15432 <|> 125
+
   """
-  def new(numerator, denominator \\ 1), do: numerator <|> denominator
+  def new(numerator, denominator \\ 1)
+
+  if Code.ensure_loaded?(Decimal) do
+    def new(%Decimal{} = decimal, 1) do
+      Ratio.DecimalConversion.decimal_to_rational(decimal)
+    end
+
+    def new(%Decimal{} = numerator, %Decimal{} = denominator) do
+      Ratio.DecimalConversion.decimal_to_rational(numerator) <|>
+      Ratio.DecimalConversion.decimal_to_rational(denominator)
+    end
+
+    def new(numerator, %Decimal{} = denominator) do
+      numerator <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
+    end
+  end
+
+  def new(numerator, denominator) do
+    numerator <|> denominator
+  end
 
   @doc """
   Returns the absolute version of the given number (which might be an integer, float or Rational).
