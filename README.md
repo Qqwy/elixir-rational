@@ -103,6 +103,7 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
 
 ## Changelog
+- 2.3.1 Removes spurious printing statement in `Rational.FloatConversion` that would output a line of text at compile-time.
 - 2.3.0 Adds `trunc` and `to_floor_error` functions.
 - 2.1.1 Fixes implementation of `floor` and `ceil` which was counter-intuitive for negative numbers (it now correctly rounds towards negative infinity). 
   - Drops support for Elixir versions older than 1.4, because of use of `Integer.floor_div`.
