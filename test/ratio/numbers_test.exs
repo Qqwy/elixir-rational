@@ -4,10 +4,18 @@ defmodule Ratio.NumbersTest do
 
   alias Numbers, as: N
 
-  @operations [:add, :sub, :mult, :div]
-  for operation <- @operations do
+  @unary_operations [:abs, :minus, :to_float]
+  for operation <- @unary_operations do
+    test "Numbers.#{operation}/1 has the same result as running Ratio.#{operation}/1" do
+      assert Ratio.unquote(operation)(Ratio.new(1, 3)) == N.unquote(operation)(Ratio.new(1, 3))
+    end
+  end
+
+  @binary_operations [:add, :sub, :mult, :div, :pow]
+  for operation <- @binary_operations do
     test "Numbers.#{operation}/2 has the same result as running Ratio.#{operation}/2" do
       assert Ratio.unquote(operation)(Ratio.new(1, 2), 3) == N.unquote(operation)(Ratio.new(1, 2), 3)
     end
   end
+
 end
