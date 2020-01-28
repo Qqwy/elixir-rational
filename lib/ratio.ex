@@ -225,6 +225,15 @@ defmodule Ratio do
     Ratio.DecimalConversion.decimal_to_rational(decimal)
   end
 
+  def new(%Decimal{} = numerator, %Decimal{} = denominator) do
+    Ratio.DecimalConversion.decimal_to_rational(numerator) <|>
+    Ratio.DecimalConversion.decimal_to_rational(denominator)
+  end
+
+  def new(numerator, %Decimal{} = denominator) do
+    numerator <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
+  end
+
   def new(numerator, denominator) do
     numerator <|> denominator
   end

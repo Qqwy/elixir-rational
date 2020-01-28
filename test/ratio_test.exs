@@ -10,6 +10,9 @@ defmodule RatioTest do
 
   test "decimal conversion" do
     assert 15432 <|> 125 == Ratio.new(Decimal.new("123.456"))
+    assert 617 <|> 2839 == Ratio.new(Decimal.new("1234"), Decimal.new("5678"))
+    assert 617 <|> 2839 == Ratio.new(1234, Decimal.new("5678"))
+    assert 617 <|> 2839 == Ratio.new(Decimal.new("1234"), 5678)
   end
 
   test "reject _ <|> 0" do
