@@ -2,7 +2,6 @@ defmodule Ratio.FloatConversion do
   use Ratio
 
   @max_decimals Application.get_env(:ratio, :max_float_to_rational_digits)
-  IO.puts(Application.get_env(:ratio, :max_float_to_rational_digits))
 
   @doc """
   Converts a float to a rational number.
