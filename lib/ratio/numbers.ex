@@ -22,6 +22,10 @@ defimpl Numbers.Protocols.Addition, for: Ratio do
   def add(lhs, rhs) do
     Ratio.add(lhs, rhs)
   end
+
+  def add_id(_) do
+    Ratio.new(0)
+  end
 end
 
 defimpl Numbers.Protocols.Subtraction, for: Ratio do
@@ -33,6 +37,10 @@ end
 defimpl Numbers.Protocols.Multiplication, for: Ratio do
   def mult(lhs, rhs) do
     Ratio.mult(lhs, rhs)
+  end
+
+  def mult_id(_) do
+    Ratio.new(1)
   end
 end
 
