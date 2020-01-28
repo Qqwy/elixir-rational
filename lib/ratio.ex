@@ -173,6 +173,30 @@ defmodule Ratio do
     div(numerator, denominator)
   end
 
+  def (numerator = %Decimal{}) <|> (denominator = %Decimal{}) do
+    Ratio.DecimalConversion.decimal_to_rational(numerator)
+    |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
+  end
+
+  def (numerator = %Decimal{}) <|> denominator when is_float(denominator) do
+    Ratio.DecimalConversion.decimal_to_rational(numerator)
+    |> div(Ratio.FloatConversion.float_to_rational(denominator))
+  end
+
+  def numerator <|> (denominator = %Decimal{}) when is_float(numerator) do
+    Ratio.FloatConversion.float_to_rational(numerator)
+    |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
+  end
+
+  def (numerator = %Decimal{}) <|> denominator when is_integer(denominator) do
+    Ratio.DecimalConversion.decimal_to_rational(numerator)
+    |> div(denominator)
+  end
+
+  def numerator <|> (denominator = %Decimal{}) when is_integer(numerator) do
+    div(Ratio.DecimalConversion.decimal_to_rational(numerator), denominator)
+  end
+
   def numerator <|> denominator do
     div(numerator, denominator)
   end
@@ -191,8 +215,19 @@ defmodule Ratio do
       1 <|> 3
       iex> Ratio.new(1.5, 4)
       3 <|> 8
+      iex> Ratio.DecimalConversion.decimal_to_rational(Decimal.new("123.456"))
+      15432 <|> 125
+
   """
-  def new(numerator, denominator \\ 1), do: numerator <|> denominator
+  def new(numerator, denominator \\ 1)
+
+  def new(%Decimal{} = decimal, 1) do
+    Ratio.DecimalConversion.decimal_to_rational(decimal)
+  end
+
+  def new(numerator, denominator) do
+    numerator <|> denominator
+  end
 
   @doc """
   Returns the absolute version of the given number (which might be an integer, float or Rational).
