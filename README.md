@@ -64,7 +64,8 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
 *(Of course, when possible, working with integers from the get-go is always more precise than converting floats)*
 
-
+Since version 2.4.0, Ratio also accepts [Decimals](https://github.com/ericmj/decimal) as input,
+which will be converted to rationals automatically.
 
 
 ## Installation
@@ -103,6 +104,7 @@ Floats are converted to Rational numbers before performing arithmetic. This allo
 
 
 ## Changelog
+- 2.4.0 Adds optional support for automatic conversion from [Decimal](https://github.com/ericmj/decimal)s. Thank you, @kipcole !
 - 2.3.1 Removes spurious printing statement in `Rational.FloatConversion` that would output a line of text at compile-time. Fixes support for Numbers v5+ which was broken.
 - 2.3.0 Adds `trunc` and `to_floor_error` functions.
 - 2.1.1 Fixes implementation of `floor` and `ceil` which was counter-intuitive for negative numbers (it now correctly rounds towards negative infinity). 
