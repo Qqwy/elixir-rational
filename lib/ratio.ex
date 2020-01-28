@@ -215,7 +215,7 @@ defmodule Ratio do
       1 <|> 3
       iex> Ratio.new(1.5, 4)
       3 <|> 8
-      iex> Ratio.DecimalConversion.decimal_to_rational(Decimal.new("123.456"))
+      iex> Ratio.new(Decimal.new("123.456"))
       15432 <|> 125
 
   """
