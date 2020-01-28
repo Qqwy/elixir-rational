@@ -43,7 +43,7 @@ defmodule Rational.Mixfile do
       # Documentation for Hex.pm
       {:ex_doc, "~> 0.20", only: [:dev]},
       # Generic arithmetic dispatching.
-      {:numbers, "~> 5.1.0"}
+      {:numbers, "~> 5.2.0"}
     ]
   end
 
