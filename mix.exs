@@ -4,7 +4,7 @@ defmodule Rational.Mixfile do
   def project do
     [
       app: :ratio,
-      version: "2.3.0",
+      version: "2.3.1",
       elixir: "~> 1.4",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -43,8 +43,7 @@ defmodule Rational.Mixfile do
       # Documentation for Hex.pm
       {:ex_doc, "~> 0.20", only: [:dev]},
       # Generic arithmetic dispatching.
-      {:numbers, "~> 5.1.0"},
-
+      {:numbers, "~> 5.2.0"}
       # If Decimal number support is required
       {:decimal, "~> 1.6 or ~> 2.0", optional: true}
     ]

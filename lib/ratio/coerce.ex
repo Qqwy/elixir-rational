@@ -17,3 +17,4 @@ Coerce.defcoercion(Ratio, Decimal) do
     {ratio, Ratio.DecimalConversion.decimal_to_rational(decimal)}
   end
 end
+
