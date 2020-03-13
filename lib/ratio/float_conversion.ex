@@ -14,7 +14,7 @@ defmodule Ratio.FloatConversion do
   ## Examples
 
       iex> Ratio.FloatConversion.float_to_rational(10.0)
-      10
+      10 <|> 1
       iex> Ratio.FloatConversion.float_to_rational(13.5)
       27 <|> 2
       iex> Ratio.FloatConversion.float_to_rational(1.1, 100)

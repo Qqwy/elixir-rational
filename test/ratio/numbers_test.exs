@@ -17,5 +17,4 @@ defmodule Ratio.NumbersTest do
       assert Ratio.unquote(operation)(Ratio.new(1, 2), 3) == N.unquote(operation)(Ratio.new(1, 2), 3)
     end
   end
-
 end

@@ -158,9 +158,7 @@ defmodule Ratio do
   end
 
   def numerator <|> denominator when is_integer(numerator) and is_integer(denominator) do
-    %Ratio{numerator: numerator, denominator: denominator}
-    |> simplify
-    |> remove_denominator_if_integer
+    simplify(%Ratio{numerator: numerator, denominator: denominator})
   end
 
   def numerator <|> denominator when is_float(numerator) do
@@ -390,7 +388,7 @@ defmodule Ratio do
       iex> -10
       -10
       iex> -10.0
-      -10
+      -10.0
       iex> -10.1
       -101 <|> 10
       iex> -(5 <|> 3)
@@ -499,7 +497,7 @@ defmodule Ratio do
       iex> (2 <|> 3) / (8 <|> 5)
       5 <|> 12
       iex> 2.0 / 1.0
-      2
+      2 <|> 1
 
   """
   def a / b
@@ -704,7 +702,7 @@ defmodule Ratio do
   ## Examples
 
       iex> Ratio.to_float_error(Ratio.new(1, 2))
-      {0.5, 0}
+      {0.5, 0 <|> 1}
       iex> Ratio.to_float_error(Ratio.new(2, 3))
       {0.6666666666666666, 1 <|> 30000000000}
   """
@@ -718,7 +716,11 @@ defmodule Ratio do
   Check if a number is a rational number.
   Returns false if the number is an integer, float or any other type.
 
-  To check if a float representation will result in a rational number, combine it with the unary plus operation:
+  Note that even rational numbers that represent 'whole' numbers (i.e. have a `1` as numerator)
+  are considered rational numbers.
+
+  NOTE this function will be deprecated or removed from V3.
+
 
   ## Examples
 
@@ -733,9 +735,9 @@ defmodule Ratio do
       iex>Ratio.is_rational?(10 <|> 3)
       true
       iex>Ratio.is_rational?(10 <|> 5)
-      false
-      iex>Ratio.is_rational?(+20.234)
       true
+      iex>Ratio.is_rational?(+20.234)
+      false
       iex>Ratio.is_rational?(+20.0)
       false
 
@@ -745,19 +747,16 @@ defmodule Ratio do
 
   @doc """
   Returns a binstring representation of the Rational number.
-  If the denominator is `1`, it will be printed as a normal (integer) number.
+  If the denominator is `1` it will still be printed in the `a <|> 1` format.
 
   ## Examples
 
       iex> Ratio.to_string 10 <|> 7
       "10 <|> 7"
+      iex> Ratio.to_string 10 <|> 2
+      "5 <|> 1"
   """
   def to_string(rational)
-
-  def to_string(%Ratio{numerator: numerator, denominator: denominator})
-      when denominator |> Kernel.==(1) do
-    "#{numerator}"
-  end
 
   def to_string(%Ratio{numerator: numerator, denominator: denominator}) do
     "#{numerator} <|> #{denominator}"
@@ -785,11 +784,11 @@ defmodule Ratio do
     new_denominator = Kernel.div(denominator, gcdiv)
     {new_denominator, numerator} = normalize_denom_num(new_denominator, numerator)
 
-    if new_denominator == 1 do
-      Kernel.div(numerator, gcdiv)
-    else
+    # if new_denominator == 1 do
+    #   Kernel.div(numerator, gcdiv)
+    # else
       %Ratio{numerator: Kernel.div(numerator, gcdiv), denominator: new_denominator}
-    end
+    # end
   end
 
   defp normalize_denom_num(denominator, numerator) do
@@ -799,11 +798,6 @@ defmodule Ratio do
       {denominator, numerator}
     end
   end
-
-  # Returns an integer if the result is of the form _ <|> 1
-  defp remove_denominator_if_integer(rational)
-  defp remove_denominator_if_integer(%Ratio{numerator: numerator, denominator: 1}), do: numerator
-  defp remove_denominator_if_integer(rational), do: rational
 
   # Calculates the Greatest Common denominator of two numbers.
   defp gcd(a, 0), do: abs(a)
