@@ -351,7 +351,7 @@ defmodule Ratio do
       iex> 2 - 3
       -1
       iex> 2.3 - 0.3
-      2
+      2 <|> 1
       iex> 2.3 - 0.1
       11 <|> 5
       iex> (2 <|> 3) - (1 <|> 5)
@@ -404,8 +404,7 @@ defmodule Ratio do
   Unary plus. Returns *num*.
   Coerces the number to a rational if it is a float.
   """
-  def +num when is_integer(num), do: Kernel.+(num)
-  def +num when is_float(num), do: Ratio.FloatConversion.float_to_rational(num)
+  def +num when is_integer(num) or is_float(num), do: Kernel.+(num)
   def +num, do: num
 
   @doc """
@@ -665,7 +664,7 @@ defmodule Ratio do
   def pow(x, n)
 
   # Convert Float to Rational.
-  def pow(x, n) when is_float(x), do: pow(Ratio.FloatConversion.float_to_rational(x), n)
+  # def pow(x, n) when is_float(x), do: pow(Ratio.FloatConversion.float_to_rational(x), n)
 
   # Small powers
   def pow(x, 1), do: x
@@ -678,8 +677,12 @@ defmodule Ratio do
   defp do_pow(_x, 0, y), do: y
   defp do_pow(x, 1, y), do: x * y
   defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(1 / x, Kernel.-(n), y)
-  defp do_pow(x, n, y) when rem(n, 2) |> Kernel.==(0), do: do_pow(x * x, div(n, 2), y)
-  defp do_pow(x, n, y), do: do_pow(x * x, div(n - 1, 2), x * y)
+  defp do_pow(x, n, y) when rem(n, 2) |> Kernel.==(0) do
+    do_pow(x * x, Kernel.div(n, 2), y)
+  end
+  defp do_pow(x, n, y) do
+    do_pow(x * x, Kernel.div(n - 1, 2), x * y)
+  end
 
   @doc """
   Converts the given *number* to a Float. As floats do not have arbitrary precision, this operation is generally not reversible.
