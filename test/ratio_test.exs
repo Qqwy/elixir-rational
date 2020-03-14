@@ -1,6 +1,6 @@
 defmodule RatioTest do
   use ExUnit.Case, async: true
-  use Ratio, comparison: true
+  import Ratio, only: [<|>: 2]
   doctest Ratio
   doctest Ratio.FloatConversion
 

@@ -1,6 +1,6 @@
 if Code.ensure_loaded?(Decimal) do
   defmodule Ratio.DecimalConversion do
-    use Ratio
+    import Ratio, only: [<|>: 2]
 
     def decimal_to_rational(%Decimal{coef: coef, exp: 0}) do
       Ratio.new(coef, 1)

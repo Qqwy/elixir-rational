@@ -1,6 +1,6 @@
 defmodule Ratio.NumbersTest do
   use ExUnit.Case, async: true
-  use Ratio, override_math: false
+  # import Ratio, only: [<|>: 2]
 
   alias Numbers, as: N
 

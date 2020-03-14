@@ -1,44 +1,5 @@
-# TODO: add @specs.
-# TODO: >, <, >=, <=
 defmodule Ratio do
-  @vsn "1.2.0"
-
-  @moduledoc """
-  This module allows you to use Rational numbers in Elixir, to enable exact calculations with all numbers big and small.
-
-  It also defines the new <|> operator and (optionally) overrides the arithmetic +, -, * and / operators to work with ints, floats and Rational numbers all alike.
-
-  Floats are also automatically coerced into Rationals whenever possible.
-
-  And don't worry: If you don't like operator-overloading: There are longhand function aliases available too.
-
-
-  To use the module, use `use Ratio` where you need it.
-
-  If you do not want to override the Kernel's built-in math operators, use
-
-      # Does not override *, /, -, +, div, abs
-      use Ratio, override_math: false
-
-  If you just do not want to override the Kernel's built-in *inline* math operators, use `use Ratio, inline_math: false`
-
-      # Does not override *, /, -, +
-      use Ratio, inline_math: false
-
-  If you do not want the new operator `<|>` to be imported, use
-
-      # Does not include <|>, construct Rational numbers using Ratio.new(a, b)
-      use Ratio, operator: false
-
-  These options can be combined (with `override_math` taking precedence over `inline_math` )
-  """
-
-  @inline_math_functions [*: 2, /: 2, -: 2, -: 1, +: 2, +: 1]
-  # ++ @inline_math_functions
-  @overridden_math_functions [div: 2, abs: 1, floor: 1, ceil: 1, trunc: 1]
-  @comparison_functions [==: 2, <=: 2, >=: 2, <: 2, >: 2]
-  @rational_operator [<|>: 2]
-  @never_export_these_functions [to_float: 1, to_float_error: 1, new: 2]
+  @vsn "3.0.0"
 
   import Kernel,
     except: [
@@ -47,59 +8,40 @@ defmodule Ratio do
       floor: 1,
       ceil: 1,
       trunc: 1,
-      *: 2,
-      /: 2,
-      -: 2,
-      -: 1,
-      +: 2,
-      +: 1,
-      ==: 2,
-      <=: 2,
-      >=: 2,
-      <: 2,
-      >: 2
     ]
 
+  @moduledoc """
+  This module allows you to use Rational numbers in Elixir, to enable exact calculations with all numbers big and small.
+
+  `Ratio` defines arithmetic and comparison operations to work with rational numbers.
+
+  Usually, you probably want to add the line `import Ratio, only: [<|>: 2]` to your code.
+
+  ## Shorthand operator
+
+  Rational numbers can be written using the operator `<|>` (as in: `1 <|> 2`), which is also how Ratio structs are pretty-printed when inspecting.
+  `a <|> b` is a shorthand for `Ratio.new(a, b)`.
+
+  ## Inline Math Operators and Casting
+
+  Ratio interopts with the `Numbers` library:
+  If you want to overload Elixir's builtin math operators, you can use `use Numbers, overload_operators: true`.
+
+  This also allows you to pass in a rational number as one argument
+  and an integer, float or Decimal (if you have installed the `Decimal` library),
+  which are then cast to rational numbers whenever necessary.
+
+  """
+
   defmacro __using__(opts) do
-    override_math = Keyword.get(opts, :override_math, true)
-    use_inline_math = Keyword.get(opts, :inline_math, true)
-    use_comparison = Keyword.get(opts, :comparison, false)
-    use_operator = Keyword.get(opts, :operator, true)
+    raise """
+    Writing `use Ratio` (with or without options) is no longer possible in version 3.
 
-    overridden_kernel_functions =
-      cond do
-        use_inline_math && override_math ->
-          @overridden_math_functions ++ @inline_math_functions
+    Instead:
 
-        override_math ->
-          @overridden_math_functions
-
-        true ->
-          []
-      end
-
-    overridden_kernel_functions =
-      if use_comparison,
-        do: overridden_kernel_functions ++ @comparison_functions,
-        else: overridden_kernel_functions
-
-    hidden_functions =
-      (@overridden_math_functions ++ @inline_math_functions ++ @comparison_functions) --
-        overridden_kernel_functions
-
-    hidden_functions =
-      if !use_operator do
-        hidden_functions ++ @rational_operator
-      else
-        hidden_functions
-      end
-
-    hidden_functions = hidden_functions ++ @never_export_these_functions
-
-    quote do
-      import Kernel, except: unquote(overridden_kernel_functions)
-      import Ratio, except: unquote(hidden_functions)
-    end
+    - To only use the rational number creation shorthand operator, write `import Ratio, only: [<|>: 2]`
+    - To override the inline math operators, write `use Numbers, overload_operators: true`. (and see the `Numbers` module/library for more information.)
+    """
   end
 
   @doc """
@@ -117,7 +59,6 @@ defmodule Ratio do
   @doc """
   Creates a new Rational number.
   This number is simplified to the most basic form automatically.
-  If the most basic form has the format `_ <|> 1`, it is returned in integer form.
 
   Rational numbers with a `0` as denominator are not allowed.
 
@@ -125,7 +66,7 @@ defmodule Ratio do
 
   ## Floats
 
-  Tl;Dr: *If possible, don't use them.*
+  *If possible, don't use them.*
 
   Using Floats for the numerator or denominator is possible, however, because base-2 floats cannot represent all base-10 fractions properly, the results might be different from what you might expect.
   See [The Perils of Floating Point](http://www.lahey.com/float.htm) for more information about this.
@@ -153,7 +94,7 @@ defmodule Ratio do
   """
   def numerator <|> denominator
 
-  def _numerator <|> 0 do
+  def numerator <|> 0 do
     raise ArithmeticError
   end
 
@@ -218,10 +159,6 @@ defmodule Ratio do
       1 <|> 2
       iex> Ratio.new(100, 300)
       1 <|> 3
-      iex> Ratio.new(1.5, 4)
-      3 <|> 8
-      iex> Ratio.new(Decimal.new("123.456"))
-      15432 <|> 125
 
   """
   def new(numerator, denominator \\ 1)
@@ -294,21 +231,9 @@ defmodule Ratio do
   def denominator(%Ratio{denominator: denominator}), do: denominator
 
   @doc """
-  Longhand for `Ratio.+/2`
+  Adds two rational numbers.
   """
   def add(a, b)
-
-  def add(a, b) when is_integer(a) and is_integer(b), do: Kernel.+(a, b)
-
-  def add(a, b) when is_float(a), do: add(Ratio.FloatConversion.float_to_rational(a), b)
-
-  def add(a, b) when is_float(b), do: add(a, Ratio.FloatConversion.float_to_rational(b))
-
-  def add(a, %Ratio{numerator: b, denominator: lcm}) when is_integer(a),
-    do: Kernel.+(a * lcm, b) <|> lcm
-
-  def add(%Ratio{numerator: a, denominator: lcm}, b) when is_integer(b),
-    do: Kernel.+(b * lcm, a) <|> lcm
 
   def add(%Ratio{numerator: a, denominator: lcm}, %Ratio{numerator: c, denominator: lcm}) do
     Kernel.+(a, c) <|> lcm
@@ -318,112 +243,33 @@ defmodule Ratio do
     Kernel.+(a * d, c * b) <|> (b * d)
   end
 
-  @doc """
-  Adds two numbers, one or both of which might be integers, floats or rationals.
 
-  The result is converted to a rational if applicable.
+  @doc """
+  Subtracts the rational number *b* from the rational number *a*.
+  """
+  def sub(a, b), do: add(a, minus(b))
+
+  @doc """
+  Negates the given rational number.
 
   ## Examples
 
-      iex> 2 + 3
-      5
-      iex> 2.3 + 0.3
-      13 <|> 5
-      iex> 2 + (2 <|> 3)
-      8 <|> 3
+  iex> Ratio.minus(5 <|> 3)
+  -5 <|> 3
   """
-  def a + b when is_integer(a) and is_integer(b), do: Kernel.+(a, b)
-  def a + b, do: add(a, b)
-
-  @doc """
-  Longhand for `Ratio.-/2`
-  """
-  def sub(a, b) when is_integer(a) and is_integer(b), do: Kernel.-(a, b)
-  def sub(a, b), do: add(a, negate(b))
-
-  @doc """
-  Subtracts *b* from *a*. One or both might be integers, floats or rationals.
-
-  The result is converted to a rational if applicable.
-
-  ## Examples
-
-      iex> 2 - 3
-      -1
-      iex> 2.3 - 0.3
-      2 <|> 1
-      iex> 2.3 - 0.1
-      11 <|> 5
-      iex> (2 <|> 3) - (1 <|> 5)
-      7 <|> 15
-  """
-  def a - b when is_integer(a) and is_integer(b), do: Kernel.-(a, b)
-  def a - b, do: add(a, negate(b))
-
-  @doc """
-  Longhand for `Ratio.-/1`
-  """
-  def negate(num)
-
-  def negate(num) when is_integer(num), do: Kernel.-(num)
-
-  def negate(num) when is_float(num), do: negate(Ratio.FloatConversion.float_to_rational(num))
-
-  def negate(%Ratio{numerator: numerator, denominator: denominator}) do
+  def minus(%Ratio{numerator: numerator, denominator: denominator}) do
     %Ratio{numerator: Kernel.-(numerator), denominator: denominator}
   end
 
   @doc """
-  Alias for `Ratio.negate(num)`; follows Numeric behaviour.
-  """
-  def minus(num), do: negate(num)
+  Multiplies two rational numbers.
 
-  @doc """
-  Unary minus. Inverts the sign of the given *num*, which might be an integer, float or rational.
-  Floats are converted to Rationals before inverting the sign.
+  # Examples
 
-
-  ## Examples
-
-      iex> -10
-      -10
-      iex> -10.0
-      -10.0
-      iex> -10.1
-      -101 <|> 10
-      iex> -(5 <|> 3)
-      -5 <|> 3
-      iex> -123.456
-      -15432 <|> 125
-  """
-  def -num when is_integer(num), do: Kernel.-(num)
-
-  def -num, do: negate(num)
-
-  @doc """
-  Unary plus. Returns *num*.
-  Coerces the number to a rational if it is a float.
-  """
-  def +num when is_integer(num) or is_float(num), do: Kernel.+(num)
-  def +num, do: num
-
-  @doc """
-  Longhand for `Ratio.*/2`
+  iex> Ratio.mult( 1 <|> 3, 1 <|> 2)
+  1 <|> 6
   """
   def mult(number1, number2)
-
-  def mult(number1, number2) when is_number(number1) and is_number(number2),
-    do: Kernel.*(number1, number2)
-
-  def mult(%Ratio{numerator: numerator, denominator: denominator}, number)
-      when is_number(number) do
-    Kernel.*(numerator, number) <|> denominator
-  end
-
-  def mult(number, %Ratio{numerator: numerator, denominator: denominator})
-      when is_number(number) do
-    Kernel.*(numerator, number) <|> denominator
-  end
 
   def mult(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{
         numerator: numerator2,
@@ -432,50 +278,16 @@ defmodule Ratio do
     Kernel.*(numerator1, numerator2) <|> Kernel.*(denominator1, denominator2)
   end
 
-  @doc false
-  # TODO Remove in future version.
-  def mul(number1, number2) do
-    IO.puts("Warning: `Ratio.mul/2` is deprecated. Use `Ratio.mult/2` instead.")
-    mult(number1, number2)
-  end
-
   @doc """
-  Multiplies two numbers. (one or both of which might be integers, floats or rationals)
+  Divides the rational number *a* by the rational number *b*.
 
   ## Examples
 
-      iex> ((2 <|> 3) *  10)
-      20 <|> 3
-      iex> ( 1 <|> 3) * (1 <|> 2)
-      1 <|> 6
-  """
-  def a * b
-
-  def a * b when is_number(a) and is_number(b), do: Kernel.*(a, b)
-
-  def a * b, do: mult(a, b)
-
-  @doc """
-  Longhand for `Ratio.//2`
+  iex> Ratio.div(2 <|> 3, 8 <|> 5)
+  5 <|> 12
 
   """
   def div(a, b)
-
-  def div(a, b) when is_number(a) and is_integer(b), do: a <|> b
-
-  def div(a, b) when is_number(a) and is_float(b),
-    do: div(a, Ratio.FloatConversion.float_to_rational(b))
-
-  def div(%Ratio{numerator: numerator, denominator: denominator}, number)
-      when is_number(number) do
-    numerator <|> Kernel.*(denominator, number)
-  end
-
-  # 6 / (2 <|> 3) == 6 * (3 <|> 2)
-  def div(number, %Ratio{numerator: numerator, denominator: denominator})
-      when is_number(number) do
-    mult(number, denominator <|> numerator)
-  end
 
   def div(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{
         numerator: numerator2,
@@ -484,31 +296,21 @@ defmodule Ratio do
     Kernel.*(numerator1, denominator2) <|> Kernel.*(denominator1, numerator2)
   end
 
-  @doc """
-  Divides a number by another number, one or both of which might be integers, floats or rationals.
-
-  The function will return integers whenever possible, and otherwise returns a rational number.
-
-  ## Examples
-
-      iex> (1 <|> 3) / 2
-      1 <|> 6
-      iex> (2 <|> 3) / (8 <|> 5)
-      5 <|> 12
-      iex> 2.0 / 1.0
-      2 <|> 1
-
-  """
-  def a / b
-
-  def a / b when is_number(a) and is_integer(b), do: a <|> b
-
-  def a / b, do: div(a, b)
-
   defmodule ComparisonError do
     defexception message: "These things cannot be compared."
   end
 
+  @doc """
+  Compares two rational numbers, returning `:lt`, `:eg` or `:gt`
+  depending on whether *a* is less than, equal to or greater than *b*, respectively.
+
+  This function is able to compare rational numbers against integers or floats as well.
+
+  This function accepts other types as input as well, comparing them using Erlang's Term Ordering.
+  This is mostly useful if you have a collection that contains other kinds of numbers (builtin integers or floats) as well.
+
+  """
+  # TODO enhance this function to work with other number types?
   def compare(%Ratio{numerator: a, denominator: b}, %Ratio{numerator: c, denominator: d}) do
     compare(Kernel.*(a, d), Kernel.*(b, c))
   end
@@ -521,13 +323,12 @@ defmodule Ratio do
     compare(Kernel.*(a, denominator), numerator)
   end
 
-  # Compares any other value that Elixir/Erlang can understand.
+  # Fallback using the builting Erlang term ordering.
   def compare(a, b) do
-    cond do
-      Kernel.>(a, b) -> :gt
-      Kernel.<(a, b) -> :lt
-      Kernel.==(a, b) -> :eq
-      true -> raise ComparisonError, "These things cannot be compared: #{a} , #{b}"
+    case {a, b} do
+      {a, b} when a > b -> :gt
+      {a, b} when a < b -> :lt
+      _ -> :eq
     end
   end
 
@@ -562,86 +363,6 @@ defmodule Ratio do
   def equal?(a, b), do: compare(a, b) |> Kernel.==(:eq)
 
   @doc """
-  Compares two numbers and returns true if the first equal to the second.
-
-  ## Examples
-
-    iex> 2 == 3
-    false
-    iex> 5 == 5
-    true
-    iex> 2.3 == 0.3
-    false
-    iex> 0.1 == (1 <|> 10)
-    true
-  """
-  def a == b, do: eq?(a, b)
-
-  @doc """
-  Compares two numbers and returns true if the first is less than the second.
-
-  ## Examples
-
-      iex> 2 < 3
-      true
-      iex> 5 < 5
-      false
-      iex> 2.3 < 0.3
-      false
-      iex> 10 < (1 <|> 10)
-      false
-  """
-  def a < b, do: lt?(a, b)
-
-  @doc """
-  Compares two numbers and returns true if the first is less than or equal to the second.
-
-  ## Examples
-
-      iex> 2 <= 3
-      true
-      iex> 5 <= 5
-      true
-      iex> 2.3 <= 0.3
-      false
-      iex> 10 <= (1 <|> 10)
-      false
-  """
-  def a <= b, do: lte?(a, b)
-
-  @doc """
-  Compares two numbers and returns true if the first is greater than the second.
-
-  ## Examples
-
-      iex> 2 > 3
-      false
-      iex> 5 > 5
-      false
-      iex> 2.3 > 0.3
-      true
-      iex> 10 > (1 <|> 10)
-      true
-  """
-  def a > b, do: gt?(a, b)
-
-  @doc """
-  Compares two numbers and returns true if the first is greater than or equal to the second.
-
-  ## Examples
-
-      iex> 2 >= 3
-      false
-      iex> 5 >= 5
-      true
-      iex> 2.3 >= 0.3
-      true
-      iex> 10 >= (1 <|> 10)
-      true
-  """
-  def a >= b, do: gte?(a, b)
-
-  @doc """
   returns *x* to the *n* th power.
 
   *x* is allowed to be an integer, rational or float (in the last case, this is first converted to a rational).
@@ -653,11 +374,11 @@ defmodule Ratio do
 
   ## Examples
 
-      iex>pow(2, 4)
+      iex> Ratio.pow(2, 4)
       16
-      iex>pow(2, -4)
+      iex> Ratio.pow(2, -4)
       1 <|> 16
-      iex>pow(3 <|> 2, 10)
+      iex> Ratio.pow(3 <|> 2, 10)
       59049 <|> 1024
   """
   @spec pow(number() | Ratio.t(), pos_integer()) :: number() | Ratio.t()
@@ -676,12 +397,12 @@ defmodule Ratio do
   defp do_pow(x, n, y \\ 1)
   defp do_pow(_x, 0, y), do: y
   defp do_pow(x, 1, y), do: x * y
-  defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(1 / x, Kernel.-(n), y)
+  defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(1 <|> x, Kernel.-(n), y)
   defp do_pow(x, n, y) when rem(n, 2) |> Kernel.==(0) do
-    do_pow(x * x, Kernel.div(n, 2), y)
+    do_pow(Numbers.mult(x, x), Kernel.div(n, 2), y)
   end
   defp do_pow(x, n, y) do
-    do_pow(x * x, Kernel.div(n - 1, 2), x * y)
+    do_pow(Numbers.mult(x, x), Kernel.div(n - 1, 2), x * y)
   end
 
   @doc """
@@ -844,7 +565,7 @@ defmodule Ratio do
   def ceil(num) when is_integer(num), do: num
 
   def ceil(num = %Ratio{numerator: numerator, denominator: denominator}) do
-    floor = floor(num)
+    floor = Ratio.floor(num)
 
     if numerator <|> denominator == floor do
       floor
@@ -874,7 +595,4 @@ defmodule Ratio do
   def trunc(%Ratio{numerator: numerator, denominator: denominator}) do
     Kernel.div(numerator, denominator)
   end
-
-  # So they can without problem be overridden by other libraries that extend on this one.
-  defoverridable @overridden_math_functions
 end

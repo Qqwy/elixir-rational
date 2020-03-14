@@ -1,5 +1,5 @@
 defmodule Ratio.FloatConversion do
-  use Ratio
+  import Ratio, only: [<|>: 2]
 
   @max_decimals Application.get_env(:ratio, :max_float_to_rational_digits)
 
