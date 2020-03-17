@@ -1,5 +1,5 @@
 defmodule Ratio.FloatConversion do
-  use Ratio
+  import Ratio, only: [<|>: 2]
 
   @max_decimals Application.get_env(:ratio, :max_float_to_rational_digits)
 
@@ -14,7 +14,7 @@ defmodule Ratio.FloatConversion do
   ## Examples
 
       iex> Ratio.FloatConversion.float_to_rational(10.0)
-      10
+      10 <|> 1
       iex> Ratio.FloatConversion.float_to_rational(13.5)
       27 <|> 2
       iex> Ratio.FloatConversion.float_to_rational(1.1, 100)
@@ -26,7 +26,7 @@ defmodule Ratio.FloatConversion do
   def float_to_rational(float, max_decimals \\ @max_decimals)
 
   def float_to_rational(float, max_decimals) when Kernel.<(float, 0.0) do
-    -float_to_rational(abs(float), max_decimals)
+    Ratio.minus(float_to_rational(abs(float), max_decimals))
   end
 
   def float_to_rational(float, max_decimals) do
@@ -48,7 +48,7 @@ defmodule Ratio.FloatConversion do
   # Changes {'1', '234'} to (1234 <|> 1000)
   defp intdec_tuple_to_rational({integer_list, decimal_list}) do
     decimal_len = Enum.count(decimal_list)
-    numerator = Ratio.pow(10, decimal_len)
+    numerator = Numbers.pow(10, decimal_len)
     integer = List.to_integer(integer_list)
     decimal = List.to_integer(decimal_list)
 
