@@ -19,11 +19,17 @@ defmodule Rational.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
+    extra_applications =
+      case Mix.env() do
+        :test -> [:stream_data]
+        _ -> []
+      end
     [
       applications: [
         :logger,
         :numbers
-      ]
+      ],
+      extra_applications: extra_applications
     ]
   end
 
@@ -45,7 +51,8 @@ defmodule Rational.Mixfile do
       # Generic arithmetic dispatching.
       {:numbers, "~> 5.2.0"},
       # If Decimal number support is required
-      {:decimal, "~> 1.6 or ~> 2.0", optional: true}
+      {:decimal, "~> 1.6 or ~> 2.0", optional: true},
+      {:stream_data, "~> 0.1", only: :test},
     ]
   end
 

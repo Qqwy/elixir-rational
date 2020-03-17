@@ -1,6 +1,9 @@
 defmodule RatioTest do
   use ExUnit.Case, async: true
-  import Ratio, only: [<|>: 2]
+  use ExUnitProperties
+  import TestHelper
+
+  import Ratio, only: [<|>: 2, is_rational: 1]
   doctest Ratio
   doctest Ratio.FloatConversion
 
@@ -43,4 +46,18 @@ defmodule RatioTest do
     assert Ratio.equal?(1 <|> 3, 1 <|> 3)
     refute Ratio.equal?(1 <|> 3, 1 <|> 4)
   end
+
+  property "Ratio.plus has the closure property" do
+    check all a <- rational_generator(),
+              b <- rational_generator() do
+      assert is_rational(Ratio.add(a, b))
+    end
+  end
+
+    property "Ratio.plus is commutative" do
+      check all a <- rational_generator(),
+                b <- rational_generator() do
+        assert Ratio.add(a, b) == Ratio.add(b, a)
+      end
+    end
 end
