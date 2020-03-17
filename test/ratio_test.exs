@@ -47,17 +47,56 @@ defmodule RatioTest do
     refute Ratio.equal?(1 <|> 3, 1 <|> 4)
   end
 
-  property "Ratio.plus has the closure property" do
+  property "Addition is closed" do
     check all a <- rational_generator(),
-              b <- rational_generator() do
+      b <- rational_generator() do
       assert is_rational(Ratio.add(a, b))
     end
   end
 
-    property "Ratio.plus is commutative" do
-      check all a <- rational_generator(),
-                b <- rational_generator() do
-        assert Ratio.add(a, b) == Ratio.add(b, a)
-      end
+  property "Addition is commutative" do
+    check all a <- rational_generator(),
+      b <- rational_generator() do
+      assert Ratio.add(a, b) == Ratio.add(b, a)
     end
+  end
+
+  property "Addition is associative" do
+    check all a <- rational_generator(),
+      b <- rational_generator(),
+      c <- rational_generator() do
+      assert Ratio.add(Ratio.add(a, b), c) == Ratio.add(a, Ratio.add(b, c))
+    end
+  end
+
+
+  property "Additive identity" do
+    check all a <- rational_generator() do
+      assert Ratio.add(a, Ratio.new(0)) == a
+      assert Ratio.add(Ratio.new(0), a) == a
+    end
+  end
+
+  property "Additive inverse" do
+    check all a <- rational_generator() do
+      inverse = Ratio.new(-a.numerator, a.denominator)
+      assert Ratio.add(a, inverse) == Ratio.new(0)
+      assert Ratio.add(inverse, a) == Ratio.new(0)
+    end
+  end
+
+  property "Subtraction is closed" do
+    check all a <- rational_generator(),
+      b <- rational_generator() do
+      assert is_rational(Ratio.sub(a, b))
+    end
+  end
+
+  property "Subtractive inverse" do
+    check all a <- rational_generator() do
+      inverse = Ratio.new(-a.numerator, a.denominator)
+      assert Ratio.sub(Ratio.new(0), inverse) == a
+      assert Ratio.sub(Ratio.new(0), a) == inverse
+    end
+  end
 end
