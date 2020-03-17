@@ -48,7 +48,7 @@ defmodule Ratio.FloatConversion do
   # Changes {'1', '234'} to (1234 <|> 1000)
   defp intdec_tuple_to_rational({integer_list, decimal_list}) do
     decimal_len = Enum.count(decimal_list)
-    numerator = Ratio.pow(10, decimal_len)
+    numerator = Numbers.pow(10, decimal_len)
     integer = List.to_integer(integer_list)
     decimal = List.to_integer(decimal_list)
 

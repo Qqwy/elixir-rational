@@ -56,6 +56,27 @@ defmodule Ratio do
   defstruct numerator: 0, denominator: 1
   @type t :: %Ratio{numerator: integer(), denominator: pos_integer()}
 
+  if function_exported?(:erlang, :map_get, 2) do
+    @doc """
+    Guard-safe check to see whether something is a ratioal struct.
+
+    This function relies on `:erlang.map_get` and is therefore only available in newer OTP versions.
+
+    iex> require Ratio
+    iex> Ratio.is_rational(1 <|> 2)
+    true
+    iex> Ratio.is_rational(Ratio.new(10))
+    true
+    iex> Ratio.is_rational(42)
+    false
+    iex> Ratio.is_rational(%{})
+    false
+    iex> Ratio.is_rational("My quick brown fox")
+    false
+    """
+    defguard is_rational(val) when is_map(val) and is_map_key(val, :__struct__) and is_struct(val) and  :erlang.map_get(:__struct__, val) == __MODULE__
+  end
+
   @doc """
   Creates a new Rational number.
   This number is simplified to the most basic form automatically.
@@ -103,7 +124,7 @@ defmodule Ratio do
   end
 
   def numerator <|> denominator when is_float(numerator) do
-    div(Ratio.FloatConversion.float_to_rational(numerator), denominator)
+    div(Ratio.FloatConversion.float_to_rational(numerator), Ratio.new(denominator))
   end
 
   def numerator <|> denominator when is_float(denominator) do
@@ -374,9 +395,9 @@ defmodule Ratio do
 
   ## Examples
 
-      iex> Ratio.pow(2, 4)
-      16
-      iex> Ratio.pow(2, -4)
+      iex> Ratio.pow(Ratio.new(2), 4)
+      16 <|> 1
+      iex> Ratio.pow(Ratio.new(2), -4)
       1 <|> 16
       iex> Ratio.pow(3 <|> 2, 10)
       59049 <|> 1024
@@ -388,21 +409,21 @@ defmodule Ratio do
   # def pow(x, n) when is_float(x), do: pow(Ratio.FloatConversion.float_to_rational(x), n)
 
   # Small powers
-  def pow(x, 1), do: x
-  def pow(x, 2), do: x * x
-  def pow(x, 3), do: x * x * x
-  def pow(x, n) when is_integer(n), do: do_pow(x, n)
+  def pow(x, 1) when is_rational(x), do: x
+  def pow(x, 2) when is_rational(x), do: Ratio.mult(x, x)
+  def pow(x, 3) when is_rational(x), do: Ratio.mult(Ratio.mult(x, x), x)
+  def pow(x, n) when is_rational(x) and is_integer(n), do: do_pow(x, n)
 
   # Exponentiation By Squaring.
   defp do_pow(x, n, y \\ 1)
   defp do_pow(_x, 0, y), do: y
-  defp do_pow(x, 1, y), do: x * y
+  defp do_pow(x, 1, y), do: Numbers.mult(x, y)
   defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(1 <|> x, Kernel.-(n), y)
   defp do_pow(x, n, y) when rem(n, 2) |> Kernel.==(0) do
-    do_pow(Numbers.mult(x, x), Kernel.div(n, 2), y)
+    do_pow(Ratio.mult(x, x), Kernel.div(n, 2), y)
   end
   defp do_pow(x, n, y) do
-    do_pow(Numbers.mult(x, x), Kernel.div(n - 1, 2), x * y)
+    do_pow(Ratio.mult(x, x), Kernel.div(n - 1, 2), Numbers.mult(x, y))
   end
 
   @doc """
@@ -436,31 +457,6 @@ defmodule Ratio do
     {float, float - number}
   end
 
-  if function_exported?(:erlang, :map_get, 2) do
-
-  @doc """
-  Guard-safe check to see whether something is a ratioal struct.
-
-  This function relies on `:erlang.map_get` and is therefore only available in newer OTP versions.
-
-  iex> is_rational(1 <|> 2)
-  true
-  is_rational(Ratio.new(10))
-  true
-  iex> is_rational(42)
-  false
-  iex> is_rational(%{})
-  false
-  iex> is_rational("My quick brown fox")
-  false
-  """
-  def is_rational?(%Ratio{}), do: true
-  def is_rational?(_), do: false
-
-
-  defguard is_rational(val) when is_struct(val) and is_map_key(val, :__struct__) and :erlang.map_get(:__struct__, val) == __MODULE__
-
-  end
 
   @doc """
   Returns a binstring representation of the Rational number.
