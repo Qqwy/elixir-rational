@@ -26,7 +26,7 @@ defmodule Ratio.FloatConversion do
   def float_to_rational(float, max_decimals \\ @max_decimals)
 
   def float_to_rational(float, max_decimals) when Kernel.<(float, 0.0) do
-    -float_to_rational(abs(float), max_decimals)
+    Ratio.minus(float_to_rational(abs(float), max_decimals))
   end
 
   def float_to_rational(float, max_decimals) do
