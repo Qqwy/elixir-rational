@@ -436,38 +436,31 @@ defmodule Ratio do
     {float, float - number}
   end
 
+  if function_exported?(:erlang, :map_get, 2) do
+
   @doc """
-  Check if a number is a rational number.
-  Returns false if the number is an integer, float or any other type.
+  Guard-safe check to see whether something is a ratioal struct.
 
-  Note that even rational numbers that represent 'whole' numbers (i.e. have a `1` as numerator)
-  are considered rational numbers.
+  This function relies on `:erlang.map_get` and is therefore only available in newer OTP versions.
 
-  NOTE this function will be deprecated or removed from V3.
-
-
-  ## Examples
-
-      iex>Ratio.is_rational?(10)
-      false
-      iex>Ratio.is_rational?("foo")
-      false
-      iex>Ratio.is_rational?(10.0)
-      false
-      iex>Ratio.is_rational?(10.234)
-      false
-      iex>Ratio.is_rational?(10 <|> 3)
-      true
-      iex>Ratio.is_rational?(10 <|> 5)
-      true
-      iex>Ratio.is_rational?(+20.234)
-      false
-      iex>Ratio.is_rational?(+20.0)
-      false
-
+  iex> is_rational(1 <|> 2)
+  true
+  is_rational(Ratio.new(10))
+  true
+  iex> is_rational(42)
+  false
+  iex> is_rational(%{})
+  false
+  iex> is_rational("My quick brown fox")
+  false
   """
   def is_rational?(%Ratio{}), do: true
   def is_rational?(_), do: false
+
+
+  defguard is_rational(val) when is_struct(val) and is_map_key(val, :__struct__) and :erlang.map_get(:__struct__, val) == __MODULE__
+
+  end
 
   @doc """
   Returns a binstring representation of the Rational number.
