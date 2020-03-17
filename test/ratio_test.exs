@@ -99,4 +99,68 @@ defmodule RatioTest do
       assert Ratio.sub(Ratio.new(0), a) == inverse
     end
   end
+
+  property "Multiplication is closed" do
+    check all a <- rational_generator(),
+      b <- rational_generator() do
+      assert is_rational(Ratio.mult(a, b))
+    end
+  end
+
+  property "Multiplication is commutative" do
+    check all a <- rational_generator(),
+      b <- rational_generator() do
+      assert Ratio.mult(a, b) == Ratio.mult(b, a)
+    end
+  end
+
+  property "Multiplication is associative" do
+    check all a <- rational_generator(),
+      b <- rational_generator(),
+      c <- rational_generator() do
+      assert Ratio.mult(Ratio.mult(a, b), c) == Ratio.mult(a, Ratio.mult(b, c))
+    end
+  end
+
+  property "Multiplicative identity" do
+    check all a <- rational_generator() do
+      assert Ratio.mult(a, Ratio.new(1)) == a
+      assert Ratio.mult(Ratio.new(1), a) == a
+    end
+  end
+
+  property "Multiplication by zero is always zero" do
+    check all a <- rational_generator() do
+      assert Ratio.mult(a, Ratio.new(0)) == Ratio.new(0)
+      assert Ratio.mult(Ratio.new(0), a) == Ratio.new(0)
+    end
+  end
+
+  property "Division is closed" do
+    check all a <- rational_generator(),
+      b <- rational_generator(),
+      b != Ratio.new(0) do
+      assert is_rational(Ratio.div(a, b))
+    end
+  end
+
+  property "Multiplication distributes over Addition" do
+    check all a <- rational_generator(),
+      b <- rational_generator(),
+      c <- rational_generator() do
+      left = Ratio.mult(a, Ratio.add(b, c))
+      right = Ratio.add(Ratio.mult(a, b), Ratio.mult(a, c))
+      assert left == right
+    end
+  end
+
+  property "Multiplication distributes over Subtraction" do
+    check all a <- rational_generator(),
+      b <- rational_generator(),
+      c <- rational_generator() do
+      left = Ratio.mult(a, Ratio.sub(b, c))
+      right = Ratio.sub(Ratio.mult(a, b), Ratio.mult(a, c))
+      assert left == right
+    end
+  end
 end
