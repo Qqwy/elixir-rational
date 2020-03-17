@@ -161,8 +161,12 @@ defmodule Ratio do
     end
   end
 
-  def numerator <|> denominator do
-    div(numerator, denominator)
+  def numerator <|> (denominator = %Ratio{}) when is_integer(numerator) do
+    div(%Ratio{numerator: numerator, denominator: 1}, denominator)
+  end
+
+  def (numerator = %Ratio{}) <|> denominator when is_integer(denominator) do
+    div(numerator, %Ratio{numerator: 1, denominator: denominator})
   end
 
   @doc """
