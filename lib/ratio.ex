@@ -33,7 +33,7 @@ defmodule Ratio do
 
   """
 
-  defmacro __using__(opts) do
+  defmacro __using__(_opts) do
     raise """
     Writing `use Ratio` (with or without options) is no longer possible in version 3.
 
@@ -121,7 +121,7 @@ defmodule Ratio do
   """
   def numerator <|> denominator
 
-  def numerator <|> 0 do
+  def _numerator <|> 0 do
     raise ArithmeticError
   end
 
