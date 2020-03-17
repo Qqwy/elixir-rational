@@ -454,7 +454,8 @@ defmodule Ratio do
   @spec to_float_error(t | number) :: {float, error} when error: t | number
   def to_float_error(number) do
     float = to_float(number)
-    {float, float - number}
+    error = Ratio.sub(Ratio.new(float), number)
+    {float, error}
   end
 
 
