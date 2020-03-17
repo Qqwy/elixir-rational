@@ -413,10 +413,10 @@ defmodule Ratio do
   # def pow(x, n) when is_float(x), do: pow(Ratio.FloatConversion.float_to_rational(x), n)
 
   # Small powers
-  def pow(x, 1) when is_rational(x), do: x
-  def pow(x, 2) when is_rational(x), do: Ratio.mult(x, x)
-  def pow(x, 3) when is_rational(x), do: Ratio.mult(Ratio.mult(x, x), x)
-  def pow(x, n) when is_rational(x) and is_integer(n), do: do_pow(x, n)
+  def pow(x = %__MODULE__{}, 1), do: x
+  def pow(x = %__MODULE__{}, 2), do: Ratio.mult(x, x)
+  def pow(x = %__MODULE__{}, 3), do: Ratio.mult(Ratio.mult(x, x), x)
+  def pow(x = %__MODULE__{}, n) when is_integer(n), do: do_pow(x, n)
 
   # Exponentiation By Squaring.
   defp do_pow(x, n, y \\ 1)
