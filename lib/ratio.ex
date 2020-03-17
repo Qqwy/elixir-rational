@@ -56,25 +56,31 @@ defmodule Ratio do
   defstruct numerator: 0, denominator: 1
   @type t :: %Ratio{numerator: integer(), denominator: pos_integer()}
 
+  @doc """
+  Check to see whether something is a ratioal struct.
+
+  On recent OTP versions that expose `:erlang.map_get/2` this function is guard safe.
+
+  iex> require Ratio
+  iex> Ratio.is_rational(1 <|> 2)
+  true
+  iex> Ratio.is_rational(Ratio.new(10))
+  true
+  iex> Ratio.is_rational(42)
+  false
+  iex> Ratio.is_rational(%{})
+  false
+  iex> Ratio.is_rational("My quick brown fox")
+  false
+  """
   if function_exported?(:erlang, :map_get, 2) do
-    @doc """
-    Guard-safe check to see whether something is a ratioal struct.
-
-    This function relies on `:erlang.map_get` and is therefore only available in newer OTP versions.
-
-    iex> require Ratio
-    iex> Ratio.is_rational(1 <|> 2)
-    true
-    iex> Ratio.is_rational(Ratio.new(10))
-    true
-    iex> Ratio.is_rational(42)
-    false
-    iex> Ratio.is_rational(%{})
-    false
-    iex> Ratio.is_rational("My quick brown fox")
-    false
-    """
     defguard is_rational(val) when is_map(val) and is_map_key(val, :__struct__) and is_struct(val) and  :erlang.map_get(:__struct__, val) == __MODULE__
+  else
+
+    def is_rational(val)
+    def is_rational(%Ratio{}), do: true
+    def is_rational(_), do: false
+
   end
 
   @doc """
