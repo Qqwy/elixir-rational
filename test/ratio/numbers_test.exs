@@ -17,7 +17,8 @@ defmodule Ratio.NumbersTest do
   @binary_operations [:add, :sub, :mult, :div]
   for operation <- @binary_operations do
     test "Numbers.#{operation}/2 has the same result as running Ratio.#{operation}/2 (except casting)" do
-      assert Ratio.unquote(operation)(Ratio.new(1, 2), Ratio.new(3)) == N.unquote(operation)(Ratio.new(1, 2), Ratio.new(3))
+      assert Ratio.unquote(operation)(Ratio.new(1, 2), Ratio.new(3)) ==
+               N.unquote(operation)(Ratio.new(1, 2), Ratio.new(3))
     end
   end
 
@@ -25,30 +26,27 @@ defmodule Ratio.NumbersTest do
     assert Ratio.pow(Ratio.new(1, 2), 3) == N.pow(Ratio.new(1, 2), 3)
   end
 
-
-
   property "Addition is closed" do
     check all a <- rational_generator(),
-      b <- rational_generator() do
+              b <- rational_generator() do
       assert is_rational(a + b)
     end
   end
 
   property "Addition is commutative" do
     check all a <- rational_generator(),
-      b <- rational_generator() do
+              b <- rational_generator() do
       assert a + b == b + a
     end
   end
 
   property "Addition is associative" do
     check all a <- rational_generator(),
-      b <- rational_generator(),
-      c <- rational_generator() do
-      assert (a + b) + c == a + (b + c)
+              b <- rational_generator(),
+              c <- rational_generator() do
+      assert a + b + c == a + (b + c)
     end
   end
-
 
   property "Additive identity" do
     check all a <- rational_generator() do
@@ -67,7 +65,7 @@ defmodule Ratio.NumbersTest do
 
   property "Subtraction is closed" do
     check all a <- rational_generator(),
-      b <- rational_generator() do
+              b <- rational_generator() do
       assert is_rational(a - b)
     end
   end
@@ -82,23 +80,23 @@ defmodule Ratio.NumbersTest do
 
   property "Multiplication is closed" do
     check all a <- rational_generator(),
-      b <- rational_generator() do
+              b <- rational_generator() do
       assert is_rational(a * b)
     end
   end
 
   property "Multiplication is commutative" do
     check all a <- rational_generator(),
-      b <- rational_generator() do
+              b <- rational_generator() do
       assert a * b == b * a
     end
   end
 
   property "Multiplication is associative" do
     check all a <- rational_generator(),
-      b <- rational_generator(),
-      c <- rational_generator() do
-      assert (a * b) * c == a * (b * c)
+              b <- rational_generator(),
+              c <- rational_generator() do
+      assert a * b * c == a * (b * c)
     end
   end
 
@@ -118,24 +116,24 @@ defmodule Ratio.NumbersTest do
 
   property "Division is closed" do
     check all a <- rational_generator(),
-      b <- rational_generator(),
-      b != Ratio.new(0) do
+              b <- rational_generator(),
+              b != Ratio.new(0) do
       assert is_rational(a / b)
     end
   end
 
   property "Multiplication distributes over Addition" do
     check all a <- rational_generator(),
-      b <- rational_generator(),
-      c <- rational_generator() do
+              b <- rational_generator(),
+              c <- rational_generator() do
       assert a * (b + c) == a * b + a * c
     end
   end
 
   property "Multiplication distributes over Subtraction" do
     check all a <- rational_generator(),
-      b <- rational_generator(),
-      c <- rational_generator() do
+              b <- rational_generator(),
+              c <- rational_generator() do
       assert a * (b - c) == a * b - a * c
     end
   end

@@ -7,7 +7,7 @@ defmodule Ratio do
       abs: 1,
       floor: 1,
       ceil: 1,
-      trunc: 1,
+      trunc: 1
     ]
 
   @moduledoc """
@@ -74,13 +74,13 @@ defmodule Ratio do
   false
   """
   if function_exported?(:erlang, :map_get, 2) and function_exported?(Kernel, :is_map_key, 2) do
-    defguard is_rational(val) when is_map(val) and is_map_key(val, :__struct__) and is_struct(val) and  :erlang.map_get(:__struct__, val) == __MODULE__
+    defguard is_rational(val)
+             when is_map(val) and is_map_key(val, :__struct__) and is_struct(val) and
+                    :erlang.map_get(:__struct__, val) == __MODULE__
   else
-
     def is_rational(val)
     def is_rational(%Ratio{}), do: true
     def is_rational(_), do: false
-
   end
 
   @doc """
@@ -200,8 +200,8 @@ defmodule Ratio do
     end
 
     def new(%Decimal{} = numerator, %Decimal{} = denominator) do
-      Ratio.DecimalConversion.decimal_to_rational(numerator) <|>
-      Ratio.DecimalConversion.decimal_to_rational(denominator)
+      Ratio.DecimalConversion.decimal_to_rational(numerator)
+      <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
     end
 
     def new(numerator, %Decimal{} = denominator) do
@@ -273,7 +273,6 @@ defmodule Ratio do
   def add(%Ratio{numerator: a, denominator: b}, %Ratio{numerator: c, denominator: d}) do
     Kernel.+(a * d, c * b) <|> (b * d)
   end
-
 
   @doc """
   Subtracts the rational number *b* from the rational number *a*.
@@ -429,9 +428,11 @@ defmodule Ratio do
   defp do_pow(_x, 0, y), do: y
   defp do_pow(x, 1, y), do: Numbers.mult(x, y)
   defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(1 <|> x, Kernel.-(n), y)
+
   defp do_pow(x, n, y) when rem(n, 2) |> Kernel.==(0) do
     do_pow(Ratio.mult(x, x), Kernel.div(n, 2), y)
   end
+
   defp do_pow(x, n, y) do
     do_pow(Ratio.mult(x, x), Kernel.div(n - 1, 2), Numbers.mult(x, y))
   end
@@ -467,7 +468,6 @@ defmodule Ratio do
     error = Ratio.sub(Ratio.new(float), number)
     {float, error}
   end
-
 
   @doc """
   Returns a binstring representation of the Rational number.
@@ -511,7 +511,7 @@ defmodule Ratio do
     # if new_denominator == 1 do
     #   Kernel.div(numerator, gcdiv)
     # else
-      %Ratio{numerator: Kernel.div(numerator, gcdiv), denominator: new_denominator}
+    %Ratio{numerator: Kernel.div(numerator, gcdiv), denominator: new_denominator}
     # end
   end
 

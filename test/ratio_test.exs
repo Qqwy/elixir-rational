@@ -49,26 +49,25 @@ defmodule RatioTest do
 
   property "Addition is closed" do
     check all a <- rational_generator(),
-      b <- rational_generator() do
+              b <- rational_generator() do
       assert is_rational(Ratio.add(a, b))
     end
   end
 
   property "Addition is commutative" do
     check all a <- rational_generator(),
-      b <- rational_generator() do
+              b <- rational_generator() do
       assert Ratio.add(a, b) == Ratio.add(b, a)
     end
   end
 
   property "Addition is associative" do
     check all a <- rational_generator(),
-      b <- rational_generator(),
-      c <- rational_generator() do
+              b <- rational_generator(),
+              c <- rational_generator() do
       assert Ratio.add(Ratio.add(a, b), c) == Ratio.add(a, Ratio.add(b, c))
     end
   end
-
 
   property "Additive identity" do
     check all a <- rational_generator() do
@@ -87,7 +86,7 @@ defmodule RatioTest do
 
   property "Subtraction is closed" do
     check all a <- rational_generator(),
-      b <- rational_generator() do
+              b <- rational_generator() do
       assert is_rational(Ratio.sub(a, b))
     end
   end
@@ -102,22 +101,22 @@ defmodule RatioTest do
 
   property "Multiplication is closed" do
     check all a <- rational_generator(),
-      b <- rational_generator() do
+              b <- rational_generator() do
       assert is_rational(Ratio.mult(a, b))
     end
   end
 
   property "Multiplication is commutative" do
     check all a <- rational_generator(),
-      b <- rational_generator() do
+              b <- rational_generator() do
       assert Ratio.mult(a, b) == Ratio.mult(b, a)
     end
   end
 
   property "Multiplication is associative" do
     check all a <- rational_generator(),
-      b <- rational_generator(),
-      c <- rational_generator() do
+              b <- rational_generator(),
+              c <- rational_generator() do
       assert Ratio.mult(Ratio.mult(a, b), c) == Ratio.mult(a, Ratio.mult(b, c))
     end
   end
@@ -138,16 +137,16 @@ defmodule RatioTest do
 
   property "Division is closed" do
     check all a <- rational_generator(),
-      b <- rational_generator(),
-      b != Ratio.new(0) do
+              b <- rational_generator(),
+              b != Ratio.new(0) do
       assert is_rational(Ratio.div(a, b))
     end
   end
 
   property "Multiplication distributes over Addition" do
     check all a <- rational_generator(),
-      b <- rational_generator(),
-      c <- rational_generator() do
+              b <- rational_generator(),
+              c <- rational_generator() do
       left = Ratio.mult(a, Ratio.add(b, c))
       right = Ratio.add(Ratio.mult(a, b), Ratio.mult(a, c))
       assert left == right
@@ -156,8 +155,8 @@ defmodule RatioTest do
 
   property "Multiplication distributes over Subtraction" do
     check all a <- rational_generator(),
-      b <- rational_generator(),
-      c <- rational_generator() do
+              b <- rational_generator(),
+              c <- rational_generator() do
       left = Ratio.mult(a, Ratio.sub(b, c))
       right = Ratio.sub(Ratio.mult(a, b), Ratio.mult(a, c))
       assert left == right

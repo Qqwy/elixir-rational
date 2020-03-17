@@ -24,6 +24,7 @@ defmodule Rational.Mixfile do
         :test -> [:stream_data]
         _ -> []
       end
+
     [
       applications: [
         :logger,
@@ -52,7 +53,7 @@ defmodule Rational.Mixfile do
       {:numbers, "~> 5.2.0"},
       # If Decimal number support is required
       {:decimal, "~> 1.6 or ~> 2.0", optional: true},
-      {:stream_data, "~> 0.1", only: :test},
+      {:stream_data, "~> 0.1", only: :test}
     ]
   end
 
