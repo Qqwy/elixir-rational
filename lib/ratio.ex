@@ -73,7 +73,7 @@ defmodule Ratio do
   iex> Ratio.is_rational("My quick brown fox")
   false
   """
-  if function_exported?(:erlang, :map_get, 2) do
+  if function_exported?(:erlang, :map_get, 2) and function_exported?(Kernel, :is_map_key, 2) do
     defguard is_rational(val) when is_map(val) and is_map_key(val, :__struct__) and is_struct(val) and  :erlang.map_get(:__struct__, val) == __MODULE__
   else
 
