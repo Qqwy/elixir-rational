@@ -73,5 +73,5 @@ defmodule Rational.Mixfile do
   end
 
   # Can be overridden to allow different float precisions.
-  Application.put_env(:ratio, :max_float_to_rational_digits, 10)
+  Application.put_env(:ratio, :max_float_to_rational_digits, 249)
 end
