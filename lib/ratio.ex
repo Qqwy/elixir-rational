@@ -460,7 +460,7 @@ defmodule Ratio do
       iex> Ratio.to_float_error(Ratio.new(1, 2))
       {0.5, 0 <|> 1}
       iex> Ratio.to_float_error(Ratio.new(2, 3))
-      {0.6666666666666666, 1 <|> 30000000000}
+      {0.6666666666666666, -1 <|> 27021597764222976}
   """
   @spec to_float_error(t | number) :: {float, error} when error: t | number
   def to_float_error(number) do
