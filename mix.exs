@@ -4,7 +4,7 @@ defmodule Rational.Mixfile do
   def project do
     [
       app: :ratio,
-      version: "2.4.1",
+      version: "2.4.2",
       elixir: "~> 1.4",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -20,9 +20,8 @@ defmodule Rational.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [
-      applications: [
-        :logger,
-        :numbers
+      extra_applications: [
+        :logger
       ]
     ]
   end

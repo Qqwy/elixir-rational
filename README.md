@@ -104,6 +104,7 @@ which will be converted to rationals automatically.
 
 
 ## Changelog
+- 2.4.2 Uses `extra_applications` in `mix.exs` to silence warnings in Elixir 1.11 and onwards.
 - 2.4.1 Fixes a bug in the decimal conversion implementation where certain decimals were not converted properly. Thank you, @iterateNZ!
 - 2.4.0 Adds optional support for automatic conversion from [Decimal](https://github.com/ericmj/decimal)s. Thank you, @kipcole !
 - 2.3.1 Removes spurious printing statement in `Rational.FloatConversion` that would output a line of text at compile-time. Fixes support for Numbers v5+ which was broken.
