@@ -4,7 +4,7 @@ defmodule Rational.Mixfile do
   def project do
     [
       app: :ratio,
-      version: "2.4.1",
+      version: "2.4.2",
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -21,13 +21,12 @@ defmodule Rational.Mixfile do
   def application do
     extra_applications =
       case Mix.env() do
-        :test -> [:stream_data]
-        _ -> []
+        :test -> [:stream_data, :logger]
+        _ -> [:logger]
       end
 
     [
       applications: [
-        :logger,
         :numbers
       ],
       extra_applications: extra_applications
