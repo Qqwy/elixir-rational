@@ -9,75 +9,6 @@ This library allows you to use Rational numbers in Elixir, to enable exact calcu
 
 Ratio follows the Numeric behaviour from [Numbers](https://github.com/Qqwy/elixir_number), and can therefore be used in combination with any data type that uses Numbers (such as [Tensor](https://hex.pm/packages/tensor) and [ComplexNum](https://github.com/Qqwy/elixir_complex_num)).
 
-
-## Some Examples
-
-Rationals are constructed using `numerator <|> denomerator` (or, if you don't like the infix operator, using `Ratio.new(numerator, denomerator)`)
-
-Notice that Rationals are automatically simplified, and coerced to integers whenever possible.
-
-      iex> use Ratio
-      nil
-      iex> 1 <|> 2
-      1 <|> 2
-      iex> 2 <|> 1
-      2
-      iex> 100 <|> 300
-      1 <|> 3
-      iex> 1.5 <|> 4
-      3 <|> 8
-
-The normal arithmetic-operators are overloaded by Ratio to allow arithmetic with Rationals (as well as normal ints and floats). (If you do not like to overload the infix operators, there are also longhand variants available.)
-
-      iex> 2 + (2 <|> 3)
-      5 <|> 5
-      iex> 2.3 + 0.3
-      13 <|> 5
-      iex> (2 <|> 3) - (1 <|> 5)
-      7 <|> 15
-      iex> (1 <|> 3) / 2
-      1 <|> 6
-      iex> (2 <|> 3) / (8 <|> 5)
-      5 <|> 12
-
-The normal comparison-operators are optionally overloaded, with associated longhand variants. To enable them, `use Ratio, comparison: true`
-
-      iex> 0.1 == (1 <|> 10)
-      true
-      iex> 10 < (1 <|> 10)
-      false
-      iex> 10 >= (1 <|> 10)
-      true
-
-Floats are converted to Rational numbers before performing arithmetic. This allows for more precise results.
-
-      iex> Kernel.-(2.3, 0.3)
-      1.9999999999999998
-      iex> Kernel.-(2.3, 0.1)
-      2.1999999999999997
-      iex> use Ratio
-      nil
-      iex> 2.3 - 0.3
-      2
-      iex> 2.3 - 0.1
-      11 <|> 5
-
-*(Of course, when possible, working with integers from the get-go is always more precise than converting floats)*
-
-Since version 2.4.0, Ratio also accepts [Decimals](https://github.com/ericmj/decimal) as input,
-which will be converted to rationals automatically.
-
-
-## Installation
-
-  The package can be installed from hex, by adding `:ratio` to your list of dependencies in `mix.exs`:
-
-        def deps do
-          [
-            {:ratio, "~> 3.0"}
-          ]
-        end
-
 ## Using Ratio
 
 `Ratio` defines arithmetic and comparison operations to work with rational numbers.
@@ -93,7 +24,19 @@ Rational numbers can be written using the operator `<|>` (as in: `1 <|> 2`), whi
 
 Rational numbers can be manipulated using the functions in the [`Ratio`](https://hexdocs.pm/ratio/Ratio.html) module.
 
-The ratio module also contains a guard-safe `is_rational/1` check.
+```elixir
+iex> Ratio.mult( 1 <|> 3, 1 <|> 2)
+1 <|> 6
+iex> Ratio.div(2 <|> 3, 8 <|> 5)
+5 <|> 12
+iex> Ratio.pow(Ratio.new(2), 4)
+16 <|> 1
+```
+
+The ratio module also contains:
+- a guard-safe `is_rational/1` check.
+- a `compare/2` function for use with e.g. `Enum.sort`.
+- `to_float` to (lossly) convert a rational into a float.
 
 ### Inline Math Operators and Casting
 
@@ -104,6 +47,18 @@ you can add `use Numbers, overload_operators: true` to your module.
 This also allows you to pass in a rational number as one argument
 and an integer, float or Decimal (if you have installed the `Decimal` library),
 which are then cast to rational numbers whenever necessary.
+
+
+## Installation
+
+  The package can be installed from hex, by adding `:ratio` to your list of dependencies in `mix.exs`:
+
+        def deps do
+          [
+            {:ratio, "~> 3.0"}
+          ]
+        end
+
 
 
 ## Changelog
