@@ -47,6 +47,11 @@ defmodule RatioTest do
     refute Ratio.equal?(1 <|> 3, 1 <|> 4)
   end
 
+  test "small number precision" do
+    assert Ratio.equal?(Ratio.new(1.602177E-19), 1663795720783351 <|> 10384593717069655257060992658440192)
+    assert Ratio.equal?(Ratio.new(1.49241808560E-10), 5773512823493363 <|> 38685626227668133590597632)
+  end
+
   property "Addition is closed" do
     check all a <- rational_generator(),
               b <- rational_generator() do
