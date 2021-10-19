@@ -74,7 +74,7 @@ which will be converted to rationals automatically.
 
         def deps do
           [
-            {:ratio, "~> 2.0"}
+            {:ratio, "~> 3.0"}
           ]
         end
 
@@ -104,6 +104,18 @@ which will be converted to rationals automatically.
 
 
 ## Changelog
+- 3.0.0 - 
+  - All operators except `<|>` are removed from Ratio. Instead, the operators defined by [`Numbers`](https://github.com/Qqwy/elixir-number) (which `Ratio` depends on) can be used, by adding `use Numbers, overload_operators: true` to your modules. (c.f. #34)
+  - All math-based functions expect and return `Ratio` structs (rather than also working on integers and returning integers sometimes if the output turned out to be a whole number).  (c.f. #43)
+    This makes the code more efficient and more clear for users.
+    - Ratio structs representing whole numbers are no longer implicitly converted 'back' to integers, as this behaviour was confusing. (c.f. #28)
+    - If conversion to/from other number-like types is really desired, 
+      use the automatic conversions provided by `Ratio.new`, `<|>` 
+      or (a bit slower but more general) the math functions exposed by [`Numbers`](https://github.com/Qqwy/elixir-number).
+      Ratio ships with implementations of `Coerce.defcoercion` for Integer -> Ratio, Float -> Ratio and Decimal -> Ratio.
+  - `is_rational?/1` is replaced with the guard-safe `is_rational/1` (only exported on Erlang versions where `:erlang.map_get/2` is available, i.e. >= OTP 21.0.) (c.f. #37)
+  - `Float.ratio/1` is now used to convert floats into `Ratio` structs, rather than maintaining a hand-written version of this logic. (c.f #46) Thank you, @marcinwasowicz !
+  - A lot of property-based tests have been added to get some level of confidence of the correctness of the library's operations.
 - 2.4.2 Uses `extra_applications` in `mix.exs` to silence warnings in Elixir 1.11 and onwards.
 - 2.4.1 Fixes a bug in the decimal conversion implementation where certain decimals were not converted properly. Thank you, @iterateNZ!
 - 2.4.0 Adds optional support for automatic conversion from [Decimal](https://github.com/ericmj/decimal)s. Thank you, @kipcole !
