@@ -78,29 +78,32 @@ which will be converted to rationals automatically.
           ]
         end
 
+## Using Ratio
 
-  To use the module, use `use Ratio` where you need it.
+`Ratio` defines arithmetic and comparison operations to work with rational numbers.
 
-  If you do not want to override the Kernel's built-in math operators, use
+Usually, you probably want to add the line `import Ratio, only: [<|>: 2]` to your code.
 
-      # Does not override *, /, -, +, div, abs
-      use Ratio, override_math: false
+### Shorthand operator
 
-  If you want to override the Kernel's built-in comparison operators (not overridden by default) use
+Rational numbers can be written using the operator `<|>` (as in: `1 <|> 2`), which is also how Ratio structs are pretty-printed when inspecting.
+`a <|> b` is a shorthand for `Ratio.new(a, b)`.
 
-      # Override ==, <, >, <=, >=
-      use Ratio, comparison: true
+### Basic functionality
 
-  If you just do not want to override the Kernel's built-in *inline* math operators, use `use Ratio, inline_math: false`
+Rational numbers can be manipulated using the functions in the [`Ratio`](https://hexdocs.pm/ratio/Ratio.html) module.
 
-      # Does not override *, /, -, +
-      use Ratio, inline_math: false
+The ratio module also contains a guard-safe `is_rational/1` check.
 
-  If you do not want the new operator `<|>` to be imported, use
+### Inline Math Operators and Casting
 
-      use Ratio, operator: false
+Ratio interopts with the [`Numbers`](https://github.com/Qqwy/elixir-number) library:
+If you want to overload Elixir's builtin math operators, 
+you can add `use Numbers, overload_operators: true` to your module.
 
-  These options can be combined (with `override_math` taking precedence over `inline_math` )
+This also allows you to pass in a rational number as one argument
+and an integer, float or Decimal (if you have installed the `Decimal` library),
+which are then cast to rational numbers whenever necessary.
 
 
 ## Changelog
