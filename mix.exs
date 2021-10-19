@@ -4,11 +4,12 @@ defmodule Rational.Mixfile do
   def project do
     [
       app: :ratio,
-      version: "2.4.2",
+      version: "3.0.0",
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      docs: docs(),
       package: package(),
       description: description(),
       source_url: "https://github.com/qqwy/elixir-rational"
@@ -71,6 +72,12 @@ defmodule Rational.Mixfile do
     """
   end
 
-  # Can be overridden to allow different float precisions.
-  Application.put_env(:ratio, :max_float_to_rational_digits, 249)
+  defp docs do
+    [
+      main: "readme",
+      extras: [
+        "README.md": [title: "Guide/Readme"],
+      ],
+    ]
+  end
 end

@@ -98,12 +98,7 @@ defmodule Ratio do
   Using Floats for the numerator or denominator is possible, however, because base-2 floats cannot represent all base-10 fractions properly, the results might be different from what you might expect.
   See [The Perils of Floating Point](http://www.lahey.com/float.htm) for more information about this.
 
-  Passed floats are rounded to `#{Application.get_env(:ratio, :max_float_to_rational_digits)}` digits, to make the result match expectations better.
-  This number can be changed by adding `max_float_to_rational_digits: 10` to your config file.
-
-  See `Ratio.FloatConversion.float_to_rational/2` for more info about float -> rational parsing.
-
-  As Float-parsing is done by converting floats to a digit-list representation first, this is also far slower than when using integers or rationals.
+  Floats are converted into rationals by using `Float.ratio` (since version 3.0).
 
   ## Decimals
 

@@ -9,63 +9,44 @@ This library allows you to use Rational numbers in Elixir, to enable exact calcu
 
 Ratio follows the Numeric behaviour from [Numbers](https://github.com/Qqwy/elixir_number), and can therefore be used in combination with any data type that uses Numbers (such as [Tensor](https://hex.pm/packages/tensor) and [ComplexNum](https://github.com/Qqwy/elixir_complex_num)).
 
+## Using Ratio
 
-## Some Examples
+`Ratio` defines arithmetic and comparison operations to work with rational numbers.
 
-Rationals are constructed using `numerator <|> denomerator` (or, if you don't like the infix operator, using `Ratio.new(numerator, denomerator)`)
+Usually, you probably want to add the line `import Ratio, only: [<|>: 2]` to your code.
 
-Notice that Rationals are automatically simplified, and coerced to integers whenever possible.
+### Shorthand operator
 
-      iex> use Ratio
-      nil
-      iex> 1 <|> 2
-      1 <|> 2
-      iex> 2 <|> 1
-      2
-      iex> 100 <|> 300
-      1 <|> 3
-      iex> 1.5 <|> 4
-      3 <|> 8
+Rational numbers can be written using the operator `<|>` (as in: `1 <|> 2`), which is also how Ratio structs are pretty-printed when inspecting.
+`a <|> b` is a shorthand for `Ratio.new(a, b)`.
 
-The normal arithmetic-operators are overloaded by Ratio to allow arithmetic with Rationals (as well as normal ints and floats). (If you do not like to overload the infix operators, there are also longhand variants available.)
+### Basic functionality
 
-      iex> 2 + (2 <|> 3)
-      5 <|> 5
-      iex> 2.3 + 0.3
-      13 <|> 5
-      iex> (2 <|> 3) - (1 <|> 5)
-      7 <|> 15
-      iex> (1 <|> 3) / 2
-      1 <|> 6
-      iex> (2 <|> 3) / (8 <|> 5)
-      5 <|> 12
+Rational numbers can be manipulated using the functions in the [`Ratio`](https://hexdocs.pm/ratio/Ratio.html) module.
 
-The normal comparison-operators are optionally overloaded, with associated longhand variants. To enable them, `use Ratio, comparison: true`
+```elixir
+iex> Ratio.mult( 1 <|> 3, 1 <|> 2)
+1 <|> 6
+iex> Ratio.div(2 <|> 3, 8 <|> 5)
+5 <|> 12
+iex> Ratio.pow(Ratio.new(2), 4)
+16 <|> 1
+```
 
-      iex> 0.1 == (1 <|> 10)
-      true
-      iex> 10 < (1 <|> 10)
-      false
-      iex> 10 >= (1 <|> 10)
-      true
+The ratio module also contains:
+- a guard-safe `is_rational/1` check.
+- a `compare/2` function for use with e.g. `Enum.sort`.
+- `to_float` to (lossly) convert a rational into a float.
 
-Floats are converted to Rational numbers before performing arithmetic. This allows for more precise results.
+### Inline Math Operators and Casting
 
-      iex> Kernel.-(2.3, 0.3)
-      1.9999999999999998
-      iex> Kernel.-(2.3, 0.1)
-      2.1999999999999997
-      iex> use Ratio
-      nil
-      iex> 2.3 - 0.3
-      2
-      iex> 2.3 - 0.1
-      11 <|> 5
+Ratio interopts with the [`Numbers`](https://github.com/Qqwy/elixir-number) library:
+If you want to overload Elixir's builtin math operators, 
+you can add `use Numbers, overload_operators: true` to your module.
 
-*(Of course, when possible, working with integers from the get-go is always more precise than converting floats)*
-
-Since version 2.4.0, Ratio also accepts [Decimals](https://github.com/ericmj/decimal) as input,
-which will be converted to rationals automatically.
+This also allows you to pass in a rational number as one argument
+and an integer, float or Decimal (if you have installed the `Decimal` library),
+which are then cast to rational numbers whenever necessary.
 
 
 ## Installation
@@ -74,36 +55,25 @@ which will be converted to rationals automatically.
 
         def deps do
           [
-            {:ratio, "~> 2.0"}
+            {:ratio, "~> 3.0"}
           ]
         end
 
 
-  To use the module, use `use Ratio` where you need it.
-
-  If you do not want to override the Kernel's built-in math operators, use
-
-      # Does not override *, /, -, +, div, abs
-      use Ratio, override_math: false
-
-  If you want to override the Kernel's built-in comparison operators (not overridden by default) use
-
-      # Override ==, <, >, <=, >=
-      use Ratio, comparison: true
-
-  If you just do not want to override the Kernel's built-in *inline* math operators, use `use Ratio, inline_math: false`
-
-      # Does not override *, /, -, +
-      use Ratio, inline_math: false
-
-  If you do not want the new operator `<|>` to be imported, use
-
-      use Ratio, operator: false
-
-  These options can be combined (with `override_math` taking precedence over `inline_math` )
-
 
 ## Changelog
+- 3.0.0 - 
+  - All operators except `<|>` are removed from Ratio. Instead, the operators defined by [`Numbers`](https://github.com/Qqwy/elixir-number) (which `Ratio` depends on) can be used, by adding `use Numbers, overload_operators: true` to your modules. (c.f. #34)
+  - All math-based functions expect and return `Ratio` structs (rather than also working on integers and returning integers sometimes if the output turned out to be a whole number).  (c.f. #43)
+    This makes the code more efficient and more clear for users.
+    - Ratio structs representing whole numbers are no longer implicitly converted 'back' to integers, as this behaviour was confusing. (c.f. #28)
+    - If conversion to/from other number-like types is really desired, 
+      use the automatic conversions provided by `Ratio.new`, `<|>` 
+      or (a bit slower but more general) the math functions exposed by [`Numbers`](https://github.com/Qqwy/elixir-number).
+      Ratio ships with implementations of `Coerce.defcoercion` for Integer -> Ratio, Float -> Ratio and Decimal -> Ratio.
+  - `is_rational?/1` is replaced with the guard-safe `is_rational/1` (only exported on Erlang versions where `:erlang.map_get/2` is available, i.e. >= OTP 21.0.) (c.f. #37)
+  - `Float.ratio/1` is now used to convert floats into `Ratio` structs, rather than maintaining a hand-written version of this logic. (c.f #46) Thank you, @marcinwasowicz !
+  - A lot of property-based tests have been added to get some level of confidence of the correctness of the library's operations.
 - 2.4.2 Uses `extra_applications` in `mix.exs` to silence warnings in Elixir 1.11 and onwards.
 - 2.4.1 Fixes a bug in the decimal conversion implementation where certain decimals were not converted properly. Thank you, @iterateNZ!
 - 2.4.0 Adds optional support for automatic conversion from [Decimal](https://github.com/ericmj/decimal)s. Thank you, @kipcole !
