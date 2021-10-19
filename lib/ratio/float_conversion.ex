@@ -9,7 +9,7 @@ defmodule Ratio.FloatConversion do
   ## Examples
 
       iex> Ratio.FloatConversion.float_to_rational(10.0)
-      10
+      10 <|> 1
       iex> Ratio.FloatConversion.float_to_rational(13.5)
       27 <|> 2
       iex> Ratio.FloatConversion.float_to_rational(1.1)
@@ -17,10 +17,7 @@ defmodule Ratio.FloatConversion do
   """
 
   def float_to_rational(float) do
-    ratio = Float.ratio(float)
-    case ratio do
-      {numerator, 1} -> numerator
-      {numerator, denominator} -> numerator <|> denominator
-    end
+    {numerator, denominator} = Float.ratio(float)
+    numerator <|> denominator
   end
 end
