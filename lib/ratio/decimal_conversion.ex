@@ -7,7 +7,7 @@ if Code.ensure_loaded?(Decimal) do
 
     def decimal_to_rational(%Decimal{coef: coef, exp: exp, sign: sign}) do
       numerator = coef * sign
-      denominator = Ratio.pow(10, exp * -1)
+      denominator = Ratio.pow(Ratio.new(10), exp * -1)
       Ratio.new(numerator, denominator)
     end
   end
