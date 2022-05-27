@@ -62,6 +62,10 @@ which are then cast to rational numbers whenever necessary.
 
 
 ## Changelog
+- 3.0.1 -
+  - Fixes:
+    - Problem where `Ratio.ceil/1` would be off-by-one (c.f. #89). Thank you, @Hajto!
+    - Problem where `Ratio.pow/2` would return an integer rather than a new Ratio.(c.f. #100). Thank you, @speeddragon!
 - 3.0.0 - 
   - All operators except `<|>` are removed from Ratio. Instead, the operators defined by [`Numbers`](https://github.com/Qqwy/elixir-number) (which `Ratio` depends on) can be used, by adding `use Numbers, overload_operators: true` to your modules. (c.f. #34)
   - All math-based functions expect and return `Ratio` structs (rather than also working on integers and returning integers sometimes if the output turned out to be a whole number).  (c.f. #43)
