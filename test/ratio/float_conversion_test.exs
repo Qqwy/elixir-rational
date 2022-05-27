@@ -4,7 +4,7 @@ defmodule Ratio.FloatConversionTest do
   # use Ratio coerces negative floats to Ratios, so the below test needs to be run outside the Ratio.FloatConversion
   # module.
   test "float conversion for negative numbers" do
-    assert %Ratio{numerator: -2476979795053773, denominator: 2251799813685248} ==
+    assert %Ratio{numerator: -2_476_979_795_053_773, denominator: 2_251_799_813_685_248} ==
              Ratio.FloatConversion.float_to_rational(-1.1)
   end
 end

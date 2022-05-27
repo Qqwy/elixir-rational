@@ -53,7 +53,7 @@ defmodule Rational.Mixfile do
       {:numbers, "~> 5.2.0"},
       # If Decimal number support is required
       {:decimal, "~> 1.6 or ~> 2.0", optional: true},
-      {:stream_data, "~> 0.1", only: :test}
+      {:stream_data, "~> 0.1", only: [:dev, :test]}
     ]
   end
 
@@ -76,8 +76,8 @@ defmodule Rational.Mixfile do
     [
       main: "readme",
       extras: [
-        "README.md": [title: "Guide/Readme"],
-      ],
+        "README.md": [title: "Guide/Readme"]
+      ]
     ]
   end
 end

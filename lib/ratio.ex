@@ -562,7 +562,7 @@ defmodule Ratio do
   def ceil(num = %Ratio{numerator: numerator, denominator: denominator}) do
     floor = Ratio.floor(num)
 
-    if numerator <|> denominator == floor do
+    if eq?(numerator <|> denominator, floor) do
       floor
     else
       floor + 1

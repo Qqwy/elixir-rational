@@ -48,8 +48,15 @@ defmodule RatioTest do
   end
 
   test "small number precision" do
-    assert Ratio.equal?(Ratio.new(1.602177E-19), 1663795720783351 <|> 10384593717069655257060992658440192)
-    assert Ratio.equal?(Ratio.new(1.49241808560E-10), 5773512823493363 <|> 38685626227668133590597632)
+    assert Ratio.equal?(
+             Ratio.new(1.602177e-19),
+             1_663_795_720_783_351 <|> 10_384_593_717_069_655_257_060_992_658_440_192
+           )
+
+    assert Ratio.equal?(
+             Ratio.new(1.49241808560e-10),
+             5_773_512_823_493_363 <|> 38_685_626_227_668_133_590_597_632
+           )
   end
 
   property "Addition is closed" do
@@ -166,5 +173,10 @@ defmodule RatioTest do
       right = Ratio.sub(Ratio.mult(a, b), Ratio.mult(a, c))
       assert left == right
     end
+  end
+
+  test "When ceiling a number with denominator 1 it returns nominator" do
+    # https://github.com/Qqwy/elixir-rational/issues/89#issuecomment-1139664334
+    assert Ratio.new(400) |> Ratio.ceil() == 400
   end
 end
