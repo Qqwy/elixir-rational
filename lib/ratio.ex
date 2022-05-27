@@ -405,14 +405,17 @@ defmodule Ratio do
       1 <|> 16
       iex> Ratio.pow(3 <|> 2, 10)
       59049 <|> 1024
+      iex> Ratio.pow(Ratio.new(10), 0)
+      1 <|> 1
   """
-  @spec pow(number() | Ratio.t(), pos_integer()) :: number() | Ratio.t()
+  @spec pow(number() | Ratio.t(), pos_integer()) :: Ratio.t()
   def pow(x, n)
 
   # Convert Float to Rational.
   # def pow(x, n) when is_float(x), do: pow(Ratio.FloatConversion.float_to_rational(x), n)
 
   # Small powers
+  def pow(%__MODULE__{}, 0), do: Ratio.new(1)
   def pow(x = %__MODULE__{}, 1), do: x
   def pow(x = %__MODULE__{}, 2), do: Ratio.mult(x, x)
   def pow(x = %__MODULE__{}, 3), do: Ratio.mult(Ratio.mult(x, x), x)
@@ -554,6 +557,8 @@ defmodule Ratio do
   2
   iex> Ratio.ceil(Ratio.new(-3, 2))
   -1
+  iex> Ratio.ceil(Ratio.new(400))
+  400
 
   """
   def ceil(num) when is_float(num), do: Float.ceil(num)
@@ -562,7 +567,7 @@ defmodule Ratio do
   def ceil(num = %Ratio{numerator: numerator, denominator: denominator}) do
     floor = Ratio.floor(num)
 
-    if eq?(numerator <|> denominator, floor) do
+    if rem(numerator, denominator) == 0 do
       floor
     else
       floor + 1
