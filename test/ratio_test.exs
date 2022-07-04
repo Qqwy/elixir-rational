@@ -8,7 +8,7 @@ defmodule RatioTest do
   doctest Ratio.FloatConversion
 
   test "definition of <|> operator" do
-    assert 1 <|> 3 == %Ratio{numerator: 1, denominator: 3}
+    assert 1 <|> 3 == %Ratio{numerator: 1, denominator: 3, continued_fraction_representation: [0, -3]}
   end
 
   test "reject _ <|> 0" do
