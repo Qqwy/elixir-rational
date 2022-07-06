@@ -8,7 +8,11 @@ defmodule RatioTest do
   doctest Ratio.FloatConversion
 
   test "definition of <|> operator" do
-    assert 1 <|> 3 == %Ratio{numerator: 1, denominator: 3, continued_fraction_representation: [0, -3]}
+    assert 1 <|> 3 == %Ratio{
+             numerator: 1,
+             denominator: 3,
+             continued_fraction_representation: [1, 0, -3]
+           }
   end
 
   test "reject _ <|> 0" do
@@ -45,6 +49,18 @@ defmodule RatioTest do
 
     assert Ratio.equal?(1 <|> 3, 1 <|> 3)
     refute Ratio.equal?(1 <|> 3, 1 <|> 4)
+  end
+
+  test "implicit comparison operators" do
+    assert 1 <|> 2 > 1 <|> 3
+    assert -1 <|> 2 < 1 <|> 3
+    assert 1 <|> 2 > -1 <|> 3
+    assert -1 <|> 2 < -1 <|> 3
+
+    assert Ratio.new(-2.3) > Ratio.new(-5.1)
+    assert Ratio.new(2.3) > Ratio.new(-5.1)
+    assert Ratio.new(-2.3) < Ratio.new(5.1)
+    assert Ratio.new(2.3) < Ratio.new(5.1)
   end
 
   test "small number precision" do
