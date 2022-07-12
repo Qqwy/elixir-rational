@@ -113,6 +113,12 @@ defmodule Ratio do
       1 <|> 3
       iex> 1.5 <|> 4
       3 <|> 8
+      iex> (3 <|> 2) <|> 3
+      1 <|> 2
+      iex> 3 <|> (3<|>2)
+      2 <|> 1
+      iex> (3<|>2) <|> (1<|>3)
+      9 <|> 2
   """
   def numerator <|> denominator
 
@@ -167,7 +173,7 @@ defmodule Ratio do
   end
 
   def (numerator = %Ratio{}) <|> denominator when is_integer(denominator) do
-    div(numerator, %Ratio{numerator: 1, denominator: denominator})
+    div(numerator, %Ratio{numerator: denominator, denominator: 1})
   end
 
   @doc """
