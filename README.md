@@ -62,6 +62,8 @@ which are then cast to rational numbers whenever necessary.
 
 
 ## Changelog
+- 3.0.2 - 
+  - Fixes: A bug with `<|>` when the numerator was a rational and the denuminator an integer. (c.f. #104) Thank you, @varsill!
 - 3.0.1 -
   - Fixes:
     - Problem where `Ratio.ceil/1` would be off-by-one (c.f. #89). Thank you, @Hajto!
