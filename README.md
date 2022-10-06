@@ -73,8 +73,11 @@ defmodule IDoAlotOfMathHere do
   end
 end
 
-# iex> IDoAlotOfMathHere.calculate(42)
-# Ratio.new(183, 8)
+```
+
+``` elixir
+iex> IDoAlotOfMathHere.calculate(42)
+Ratio.new(183, 8)
 ```
 
 
