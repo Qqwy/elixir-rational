@@ -49,18 +49,18 @@ jobs:
             otp: 21.x
           - elixir: 1.8.x
             otp: 20.x
-          - elixir: 1.7.x
-            otp: 22.x
-          - elixir: 1.7.x
-            otp: 21.x
-          - elixir: 1.7.x
-            otp: 20.x
-          - elixir: 1.7.x
-            otp: 19.x
-          - elixir: 1.6.x
-            otp: 20.x
-          - elixir: 1.6.x
-            otp: 19.x
+          # - elixir: 1.7.x
+          #   otp: 22.x
+          # - elixir: 1.7.x
+          #   otp: 21.x
+          # - elixir: 1.7.x
+          #   otp: 20.x
+          # - elixir: 1.7.x
+          #   otp: 19.x
+          # - elixir: 1.6.x
+          #   otp: 20.x
+          # - elixir: 1.6.x
+          #   otp: 19.x
         # otp: ['24.x', '25.x']
         # elixir: ['1.14.x', '1.13.x', '1.12.x']
         # exclude:
