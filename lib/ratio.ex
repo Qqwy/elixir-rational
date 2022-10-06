@@ -120,99 +120,103 @@ defmodule Ratio do
       iex> (3<|>2) <|> (1<|>3)
       9 <|> 2
   """
-  def numerator <|> denominator
+  def new(numerator, denominator \\ 1)
 
-  def _numerator <|> 0 do
+  def new(_numerator, 0) do
     raise ArithmeticError
   end
 
-  def numerator <|> denominator when is_integer(numerator) and is_integer(denominator) do
+  def new(numerator, denominator) when is_integer(numerator) and is_integer(denominator) do
     simplify(%Ratio{numerator: numerator, denominator: denominator})
   end
 
-  def numerator <|> denominator when is_float(numerator) do
+  def new(numerator, denominator) when is_float(numerator) do
     div(Ratio.FloatConversion.float_to_rational(numerator), Ratio.new(denominator))
   end
 
-  def numerator <|> denominator when is_float(denominator) do
+  def new(numerator, denominator) when is_float(denominator) do
     div(numerator, Ratio.FloatConversion.float_to_rational(denominator))
   end
 
-  def (numerator = %Ratio{}) <|> (denominator = %Ratio{}) do
+  def new(numerator = %Ratio{}, denominator = %Ratio{}) do
     div(numerator, denominator)
   end
 
   if Code.ensure_loaded?(Decimal) do
-    def (numerator = %Decimal{}) <|> (denominator = %Decimal{}) do
+    def new(numerator = %Decimal{}, denominator = %Decimal{}) do
       Ratio.DecimalConversion.decimal_to_rational(numerator)
       |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
     end
 
-    def (numerator = %Decimal{}) <|> denominator when is_float(denominator) do
+    def new(numerator = %Decimal{}, denominator) when is_float(denominator) do
       Ratio.DecimalConversion.decimal_to_rational(numerator)
       |> div(Ratio.FloatConversion.float_to_rational(denominator))
     end
 
-    def numerator <|> (denominator = %Decimal{}) when is_float(numerator) do
+    def new(numerator, denominator = %Decimal{}) when is_float(numerator) do
       Ratio.FloatConversion.float_to_rational(numerator)
       |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
     end
 
-    def (numerator = %Decimal{}) <|> denominator when is_integer(denominator) do
+    def new(numerator = %Decimal{}, denominator) when is_integer(denominator) do
       Ratio.DecimalConversion.decimal_to_rational(numerator)
       |> div(denominator)
     end
 
-    def numerator <|> (denominator = %Decimal{}) when is_integer(numerator) do
+    def new(numerator, denominator = %Decimal{}) when is_integer(numerator) do
       div(Ratio.DecimalConversion.decimal_to_rational(numerator), denominator)
     end
   end
 
-  def numerator <|> (denominator = %Ratio{}) when is_integer(numerator) do
+  def new(numerator, denominator = %Ratio{}) when is_integer(numerator) do
     div(%Ratio{numerator: numerator, denominator: 1}, denominator)
   end
 
-  def (numerator = %Ratio{}) <|> denominator when is_integer(denominator) do
+  def new(numerator = %Ratio{}, denominator) when is_integer(denominator) do
     div(numerator, %Ratio{numerator: denominator, denominator: 1})
   end
 
-  @doc """
-  Prefix-version of `numerator <|> denominator`.
-  Useful when `<|>` is not available (for instance, when already in use by another module)
-
-  Not imported when calling `use Ratio`, so always call it as `Ratio.new(a, b)`
-
-  To use `Decimal` parameters, the [decimal](https://hex.pm/packages/decimal) library must
-  be configured in `mix.exs`.
-
-  ## Examples
-
-      iex> Ratio.new(1, 2)
-      1 <|> 2
-      iex> Ratio.new(100, 300)
-      1 <|> 3
-
-  """
-  def new(numerator, denominator \\ 1)
-
-  if Code.ensure_loaded?(Decimal) do
-    def new(%Decimal{} = decimal, 1) do
-      Ratio.DecimalConversion.decimal_to_rational(decimal)
-    end
-
-    def new(%Decimal{} = numerator, %Decimal{} = denominator) do
-      Ratio.DecimalConversion.decimal_to_rational(numerator)
-      <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
-    end
-
-    def new(numerator, %Decimal{} = denominator) do
-      numerator <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
-    end
+  def numerator <|> denominator do
+    new(numerator, denominator)
   end
 
-  def new(numerator, denominator) do
-    numerator <|> denominator
-  end
+  # @doc """
+  # Prefix-version of `numerator <|> denominator`.
+  # Useful when `<|>` is not available (for instance, when already in use by another module)
+
+  # Not imported when calling `use Ratio`, so always call it as `Ratio.new(a, b)`
+
+  # To use `Decimal` parameters, the [decimal](https://hex.pm/packages/decimal) library must
+  # be configured in `mix.exs`.
+
+  # ## Examples
+
+  #     iex> Ratio.new(1, 2)
+  #     1 <|> 2
+  #     iex> Ratio.new(100, 300)
+  #     1 <|> 3
+
+  # """
+  # def new(numerator, denominator \\ 1)
+
+  # if Code.ensure_loaded?(Decimal) do
+  #   def new(%Decimal{} = decimal, 1) do
+  #     Ratio.DecimalConversion.decimal_to_rational(decimal)
+  #   end
+
+  #   def new(%Decimal{} = numerator, %Decimal{} = denominator) do
+  #     Ratio.DecimalConversion.decimal_to_rational(numerator)
+  #     <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
+  #   end
+
+  #   def new(numerator, %Decimal{} = denominator) do
+  #     numerator <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
+  #   end
+  # end
+
+  # def new(numerator, denominator) do
+  #   numerator <|> denominator
+  # end
 
   @doc """
   Returns the absolute version of the given number (which might be an integer, float or Rational).
