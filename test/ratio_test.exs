@@ -4,6 +4,19 @@ defmodule RatioTest do
   import TestHelper
 
   import Ratio, only: [is_rational: 1]
+
+  # Example used by a module-doc doctest in the Ratio module
+  defmodule IDoAlotOfMathHere do
+    defdelegate numerator <~> denominator, to: Ratio, as: :new
+    use Numbers, overload_operators: true
+
+    def calculate(input) do
+      num = input <~> 2
+      result = num * 2 + (3 <~> 4) * 5.0
+      result / 2
+    end
+  end
+
   doctest Ratio
   doctest Ratio.FloatConversion
 

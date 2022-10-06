@@ -15,6 +15,12 @@ defmodule Ratio do
 
   `Ratio` defines arithmetic and comparison operations to work with rational numbers.
 
+
+  This module also contains:
+  - a guard-safe `is_rational/1` check.
+  - a `compare/2` function for use with e.g. `Enum.sort`.
+  - `to_float` to (lossly) convert a rational into a float.
+
   # Shorthand infix construction operator
 
   Since version 4.0, `Ratio` no longer defines an infix operator to create rational numbers.
@@ -27,7 +33,7 @@ defmodule Ratio do
 
   you can add the following one-liner to the module(s) in which you want to use it:
 
-  ```
+  ```elixir
   defdelegate numerator <~> denominator, to: Ratio, as: :new
   ```
 
@@ -39,6 +45,26 @@ defmodule Ratio do
   This also allows you to pass in a rational number as one argument
   and an integer, float or Decimal (if you have installed the `Decimal` library),
   which are then cast to rational numbers whenever necessary.
+
+  ``` elixir
+  defmodule IDoAlotOfMathHere do
+    defdelegate numerator <~> denominator, to: Ratio, as: :new
+    use Numbers, overload_operators: true
+
+    def calculate(input) do
+      num = input <~> 2
+      result = num * 2 + (3 <~> 4) * 5.0
+      result / 2
+    end
+  end
+  ```
+
+  ```
+  iex> IDoAlotOfMathHere.calculate(42)
+  Ratio.new(183, 8)
+  ```
+
+
 
   """
 
