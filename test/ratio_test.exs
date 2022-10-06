@@ -7,6 +7,8 @@ defmodule RatioTest do
   doctest Ratio
   doctest Ratio.FloatConversion
 
+  # This way we can use the shorthand syntax in this module
+  # And 'test' it at the same time :-)
   defdelegate numerator <~> denominator, to: Ratio, as: :new
 
   test "definition of <~> operator" do
