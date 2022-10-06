@@ -55,5 +55,5 @@ jobs:
           mix deps.get
           mix deps.compile
       - run: mix compile
-      # - run: mix test # Testing is already done as part of the next task:
-      - run: mix coveralls.github --trace
+      - run: mix test # Testing is already done as part of the next task:
+      # - run: mix coveralls.github --trace
