@@ -49,7 +49,7 @@ Ratio.new(16, 1)
 The Ratio module also contains:
 - a guard-safe `is_rational/1` check.
 - a `compare/2` function for use with e.g. `Enum.sort`.
-- `to_float` to (lossly) convert a rational into a float.
+- `to_float/1` to (lossly) convert a rational into a float.
 
 ### Inline Math Operators and Casting
 
