@@ -15,12 +15,21 @@ defmodule Ratio do
 
   `Ratio` defines arithmetic and comparison operations to work with rational numbers.
 
-  Usually, you probably want to add the line `import Ratio, only: [<|>: 2]` to your code.
+  # Shorthand infix construction operator
 
-  ## Shorthand operator
+  Since version 4.0, `Ratio` no longer defines an infix operator to create rational numbers.
+  Instead, rational numbers are made using `Ratio.new`,
+  and as the output from using an existing `Ratio` struct with a mathematical operation.
 
-  Rational numbers can be written using the operator `<|>` (as in: `1 <|> 2`), which is also how Ratio structs are pretty-printed when inspecting.
-  `a <|> b` is a shorthand for `Ratio.new(a, b)`.
+  If you do want to use an infix operator such as
+  `<~>` (supported in all Elixir versions)
+  or `<|>` (deprecated in Elixir v1.14, supported until Elixir v1.15, the default of older versions of the `Ratio` library)
+
+  you can add the following one-liner to the module(s) in which you want to use it:
+
+  ```
+  defdelegate numerator <~> denominator, to: Ratio, as: :new
+  ```
 
   ## Inline Math Operators and Casting
 
@@ -35,12 +44,13 @@ defmodule Ratio do
 
   defmacro __using__(_opts) do
     raise """
-    Writing `use Ratio` (with or without options) is no longer possible in version 3.
+    Writing `use Ratio` (with or without options) is no longer possible since v3.0.
 
     Instead:
 
-    - To only use the rational number creation shorthand operator, write `import Ratio, only: [<|>: 2]`
-    - To override the inline math operators, write `use Numbers, overload_operators: true`. (and see the `Numbers` module/library for more information.)
+    - For basic usage, call functions of the `Ratio` module directly without `use` or `import`.
+    - To add an infix operator for rational number creation, write `defdelegate numerator <|> denominator, to: Ratio, as: :new`.
+    - To override the inline math operators, write `use Numbers, overload_operators: true`. (and see the `Numbers` module/library documentation for more information.)
     """
   end
 
