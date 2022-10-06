@@ -61,7 +61,7 @@ defmodule Ratio do
 
   Note that *directly manipulating* the struct, however, is usually a bad idea, as then there are no validity checks, nor wil the rational be simplified.
 
-  Use `Ratio.<|>/2` or `Ratio.new/2` instead.
+  Use `Ratio.new/2` instead.
   """
   defstruct numerator: 0, denominator: 1
   @type t :: %Ratio{numerator: integer(), denominator: pos_integer()}
@@ -72,7 +72,7 @@ defmodule Ratio do
   On recent OTP versions that expose `:erlang.map_get/2` this function is guard safe.
 
   iex> require Ratio
-  iex> Ratio.is_rational(1 <|> 2)
+  iex> Ratio.is_rational(Ratio.new(1, 2))
   true
   iex> Ratio.is_rational(Ratio.new(10))
   true
@@ -117,18 +117,18 @@ defmodule Ratio do
 
   ## Examples
 
-      iex> 1 <|> 2
-      1 <|> 2
-      iex> 100 <|> 300
-      1 <|> 3
-      iex> 1.5 <|> 4
-      3 <|> 8
-      iex> (3 <|> 2) <|> 3
-      1 <|> 2
-      iex> 3 <|> (3<|>2)
-      2 <|> 1
-      iex> (3<|>2) <|> (1<|>3)
-      9 <|> 2
+      iex> Ratio.new(1, 2)
+      Ratio.new(1, 2)
+      iex> Ratio.new(100, 300)
+      Ratio.new(1, 3)
+      iex> Ratio.new(1.5, 4)
+      Ratio.new(3, 8)
+      iex> Ratio.new(Ratio.new(3, 2), 3)
+      Ratio.new(1, 2)
+      iex> Ratio.new(Ratio.new(3, 3), 2)
+      Ratio.new(2, 1)
+      iex> Ratio.new(Ratio.new(3, 2), Ratio.new(1, 3))
+      Ratio.new(9, 2)
   """
   def new(numerator, denominator \\ 1)
 
@@ -202,9 +202,9 @@ defmodule Ratio do
   # ## Examples
 
   #     iex> Ratio.new(1, 2)
-  #     1 <|> 2
+  #     Ratio.new(1, 2)
   #     iex> Ratio.new(100, 300)
-  #     1 <|> 3
+  #     Ratio.new(1, 3)
 
   # """
   # def new(numerator, denominator \\ 1)
@@ -233,13 +233,13 @@ defmodule Ratio do
 
   ## Examples
 
-      iex>Ratio.abs(-5 <|> 2)
-      5 <|> 2
+      iex>Ratio.abs(Ratio.new(-5, 2))
+      Ratio.new(5, 2)
   """
   def abs(number) when is_number(number), do: Kernel.abs(number)
 
   def abs(%Ratio{numerator: numerator, denominator: denominator}),
-    do: Kernel.abs(numerator) <|> denominator
+    do: Ratio.new(Kernel.abs(numerator), denominator)
 
   @doc """
   Returns the sign of the given number (which might be an integer, float or Rational)
@@ -282,11 +282,11 @@ defmodule Ratio do
   def add(a, b)
 
   def add(%Ratio{numerator: a, denominator: lcm}, %Ratio{numerator: c, denominator: lcm}) do
-    Kernel.+(a, c) <|> lcm
+    Ratio.new(Kernel.+(a, c), lcm)
   end
 
   def add(%Ratio{numerator: a, denominator: b}, %Ratio{numerator: c, denominator: d}) do
-    Kernel.+(a * d, c * b) <|> (b * d)
+    Ratio.new(Kernel.+(a * d, c * b), b * d)
   end
 
   @doc """
@@ -299,8 +299,8 @@ defmodule Ratio do
 
   ## Examples
 
-  iex> Ratio.minus(5 <|> 3)
-  -5 <|> 3
+  iex> Ratio.minus(Ratio.new(5, 3))
+  Ratio.new(-5, 3)
   """
   def minus(%Ratio{numerator: numerator, denominator: denominator}) do
     %Ratio{numerator: Kernel.-(numerator), denominator: denominator}
@@ -311,8 +311,8 @@ defmodule Ratio do
 
   # Examples
 
-  iex> Ratio.mult( 1 <|> 3, 1 <|> 2)
-  1 <|> 6
+  iex> Ratio.mult( Ratio.new(1, 3), Ratio.new(1, 2))
+  Ratio.new(1, 6)
   """
   def mult(number1, number2)
 
@@ -320,7 +320,7 @@ defmodule Ratio do
         numerator: numerator2,
         denominator: denominator2
       }) do
-    Kernel.*(numerator1, numerator2) <|> Kernel.*(denominator1, denominator2)
+    Ratio.new(Kernel.*(numerator1, numerator2), Kernel.*(denominator1, denominator2))
   end
 
   @doc """
@@ -328,8 +328,8 @@ defmodule Ratio do
 
   ## Examples
 
-  iex> Ratio.div(2 <|> 3, 8 <|> 5)
-  5 <|> 12
+  iex> Ratio.div(Ratio.new(2, 3), Ratio.new(8, 5))
+  Ratio.new(5, 12)
 
   """
   def div(a, b)
@@ -338,7 +338,7 @@ defmodule Ratio do
         numerator: numerator2,
         denominator: denominator2
       }) do
-    Kernel.*(numerator1, denominator2) <|> Kernel.*(denominator1, numerator2)
+    Ratio.new(Kernel.*(numerator1, denominator2), Kernel.*(denominator1, numerator2))
   end
 
   defmodule ComparisonError do
@@ -420,13 +420,13 @@ defmodule Ratio do
   ## Examples
 
       iex> Ratio.pow(Ratio.new(2), 4)
-      16 <|> 1
+      Ratio.new(16, 1)
       iex> Ratio.pow(Ratio.new(2), -4)
-      1 <|> 16
-      iex> Ratio.pow(3 <|> 2, 10)
-      59049 <|> 1024
+      Ratio.new(1, 16)
+      iex> Ratio.pow(Ratio.new(3, 2), 10)
+      Ratio.new(59049, 1024)
       iex> Ratio.pow(Ratio.new(10), 0)
-      1 <|> 1
+      Ratio.new(1, 1)
   """
   @spec pow(number() | Ratio.t(), pos_integer()) :: Ratio.t()
   def pow(x, n)
@@ -445,7 +445,7 @@ defmodule Ratio do
   defp do_pow(x, n, y \\ 1)
   defp do_pow(_x, 0, y), do: y
   defp do_pow(x, 1, y), do: Numbers.mult(x, y)
-  defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(1 <|> x, Kernel.-(n), y)
+  defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(Ratio.new(1, x), Kernel.-(n), y)
 
   defp do_pow(x, n, y) when rem(n, 2) |> Kernel.==(0) do
     do_pow(Ratio.mult(x, x), Kernel.div(n, 2), y)
@@ -476,9 +476,9 @@ defmodule Ratio do
   ## Examples
 
       iex> Ratio.to_float_error(Ratio.new(1, 2))
-      {0.5, 0 <|> 1}
+      {0.5, Ratio.new(0, 1)}
       iex> Ratio.to_float_error(Ratio.new(2, 3))
-      {0.6666666666666666, -1 <|> 27021597764222976}
+      {0.6666666666666666, Ratio.new(-1, 27021597764222976)}
   """
   @spec to_float_error(t | number) :: {float, error} when error: t | number
   def to_float_error(number) do
@@ -489,26 +489,26 @@ defmodule Ratio do
 
   @doc """
   Returns a binstring representation of the Rational number.
-  If the denominator is `1` it will still be printed in the `a <|> 1` format.
+  If the denominator is `1` it will still be printed wrapped with `Ratio.new`.
 
   ## Examples
 
-      iex> Ratio.to_string 10 <|> 7
-      "10 <|> 7"
-      iex> Ratio.to_string 10 <|> 2
-      "5 <|> 1"
+      iex> Ratio.to_string Ratio.new(10, 7)
+      "Ratio.new(10, 7)"
+      iex> Ratio.to_string Ratio.new(10, 2)
+      "Ratio.new(5, 1)"
   """
   def to_string(rational)
 
   def to_string(%Ratio{numerator: numerator, denominator: denominator}) do
-    "#{numerator} <|> #{denominator}"
+    "Ratio.new(#{numerator}, #{denominator})"
   end
 
-  defimpl String.Chars, for: Ratio do
-    def to_string(rational) do
-      Ratio.to_string(rational)
-    end
-  end
+  # defimpl String.Chars, for: Ratio do
+  #   def to_string(rational) do
+  #     Ratio.to_string(rational)
+  #   end
+  # end
 
   defimpl Inspect, for: Ratio do
     def inspect(rational, _) do
