@@ -126,7 +126,7 @@ defmodule Ratio do
       iex> Ratio.new(Ratio.new(3, 2), 3)
       Ratio.new(1, 2)
       iex> Ratio.new(Ratio.new(3, 3), 2)
-      Ratio.new(2, 1)
+      Ratio.new(1, 2)
       iex> Ratio.new(Ratio.new(3, 2), Ratio.new(1, 3))
       Ratio.new(9, 2)
   """
