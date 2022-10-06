@@ -1,0 +1,52 @@
+# create this in .github/workflows/ci.yml
+name: ci
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    strategy:
+      matrix:
+        otp: ['22.x', '23.x', '24.x', '25.x']
+        # Turn off older Elixir and OTP versions for now since they keep time-outing on GH Actions
+        # even though they run the suite perfectly fine locally
+        # otp: ['24.x', '23.x', '22.x']
+        # elixir: ['1.12.x', '1.11.x', '1.10.x', '1.9.x']
+        elixir: ['1.14.x', '1.13.x', '1.12.x', '1.11.x', '1.10.x', '1.9.x', '1.8.x', '1.7.x', '1.6.x']
+        exclude:
+          - otp: '25.x'
+            elixir: '1.12.x'
+        #exclude:
+          #- otp: '24.x'
+            #elixir: '1.9.x'
+          #- otp: '24.x'
+              #elixir: '1.10.x'
+          #- otp: '24.x'
+             #elixir: '1.11.x'
+    env:
+      MIX_ENV: test
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # NODE_COVERALLS_DEBUG: 1
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - uses: actions/cache@v2
+        id: mix-cache
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-${{ matrix.otp}}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.otp}}-${{ matrix.elixir }}-mix-
+      - if: steps.mix-cache.outputs.cache-hit != 'true'
+        run: |
+          mix deps.get
+          mix deps.compile
+      - run: mix compile
+      # - run: mix test # Testing is already done as part of the next task:
+      - run: mix coveralls.github --trace
