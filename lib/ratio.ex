@@ -212,48 +212,6 @@ defmodule Ratio do
     div(numerator, %Ratio{numerator: denominator, denominator: 1})
   end
 
-  def numerator <|> denominator do
-    new(numerator, denominator)
-  end
-
-  # @doc """
-  # Prefix-version of `numerator <|> denominator`.
-  # Useful when `<|>` is not available (for instance, when already in use by another module)
-
-  # Not imported when calling `use Ratio`, so always call it as `Ratio.new(a, b)`
-
-  # To use `Decimal` parameters, the [decimal](https://hex.pm/packages/decimal) library must
-  # be configured in `mix.exs`.
-
-  # ## Examples
-
-  #     iex> Ratio.new(1, 2)
-  #     Ratio.new(1, 2)
-  #     iex> Ratio.new(100, 300)
-  #     Ratio.new(1, 3)
-
-  # """
-  # def new(numerator, denominator \\ 1)
-
-  # if Code.ensure_loaded?(Decimal) do
-  #   def new(%Decimal{} = decimal, 1) do
-  #     Ratio.DecimalConversion.decimal_to_rational(decimal)
-  #   end
-
-  #   def new(%Decimal{} = numerator, %Decimal{} = denominator) do
-  #     Ratio.DecimalConversion.decimal_to_rational(numerator)
-  #     <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
-  #   end
-
-  #   def new(numerator, %Decimal{} = denominator) do
-  #     numerator <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
-  #   end
-  # end
-
-  # def new(numerator, denominator) do
-  #   numerator <|> denominator
-  # end
-
   @doc """
   Returns the absolute version of the given number (which might be an integer, float or Rational).
 
@@ -483,8 +441,6 @@ defmodule Ratio do
 
   @doc """
   Converts the given *number* to a Float. As floats do not have arbitrary precision, this operation is generally not reversible.
-
-  Not imported when calling `use Ratio`, so always call it as `Rational.to_float(number)`
   """
   @spec to_float(Ratio.t() | number) :: float
   def to_float(%Ratio{numerator: numerator, denominator: denominator}),
