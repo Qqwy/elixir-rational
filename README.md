@@ -25,7 +25,7 @@ and as the output from using an existing `Ratio` struct with a mathematical oper
 
 If you do want to use an infix operator such as
 `<~>` (supported in all Elixir versions)
-or `<|>` (deprecated in Elixir v1.14, supported until Elixir v1.15, the default of older versions of the `Ratio` library)
+or `<|>` (deprecated in Elixir v1.14, the default of older versions of the `Ratio` library)
 
 you can add the following one-liner to the module(s) in which you want to use it:
 
