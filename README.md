@@ -92,8 +92,9 @@ end
 
 ## Changelog
 - 4.0.0 - 
-  - Remove infix operator.
-  - Remove implementation of `String.Chars`.
+  - Remove infix operator `<|>` as its usage is deprecated in Elixir v1.14. This is a backwards-incompatible change. If you want to use the old syntax with the new version, add `defdelegate num <|> denom, to: Ratio, as: :new` to your module. Alternatively, you might want to use the not-deprecated `<~>` operator for this instead.
+  - Switch the `Inspect` implementation to use the form `Ratio.new(10, 20)` instead of `10 <|> 20`, related to above. This is also a backwards-incompatible change.
+  - Remove implementation of `String.Chars`, as the earlier implementation was not a (non-programmer) human-readable format.
 - 3.0.2 - 
   - Fixes: A bug with `<|>` when the numerator was a rational and the denuminator an integer. (c.f. #104) Thank you, @varsill!
 - 3.0.1 -
@@ -139,8 +140,8 @@ end
 
 ## Difference with the 'rational' library
 
-Observant readers might notice that there also is a '[rational](https://hex.pm/packages/rational)' library in Hex.pm. The design idea between that library vs. this one is a bit different: `Ratio` hides the internal data representation as much as possible, and numbers are therefore created using `Rational.<|>/2` or `Ratio.new/2`. This has as mayor advantage that the internal representation is always correct and simplified.
+Observant readers might notice that there also is a '[rational](https://hex.pm/packages/rational)' library in Hex.pm. The design idea between that library vs. this one is a bit different: `Ratio` hides the internal data representation as much as possible, and numbers are therefore only created using `Ratio.new/2`. This has as mayor advantage that the internal representation is always correct and simplified.
 
-The Ratio library also (optionally) overrides the built-in math operations `+, -, *, /, div, abs` so they work with combinations of integers, floats and rationals.
+The Ratio library also (optionally) overrides (by virtue of the `Numbers` library) the built-in math operations `+, -, *, /, div, abs` so they work with combinations of integers, floats and rationals.
 
 Finally, Ratio follows the Numeric behaviour, which means that it can be used with any data types that follow [Numbers](https://github.com/Qqwy/elixir_number).
