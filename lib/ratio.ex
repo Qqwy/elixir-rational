@@ -262,8 +262,26 @@ defmodule Ratio do
 
   @doc """
   Adds two rational numbers.
+
+      iex> Ratio.add(Ratio.new(1, 4), Ratio.new(2, 4))
+      Ratio.new(3, 4)
+
+  For ease of use, `rhs` is allowed to be an integer as well:
+
+      iex> Ratio.add(Ratio.new(1, 4), 2)
+      Ratio.new(9, 4)
+
+  To perform addition where one of the operands might be another numeric type,
+  use `Numbers.add/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.add(Ratio.new(1, 3), Decimal.new("3.14"))
+      ** (FunctionClauseError) no function clause matching in Ratio.add/2
+
+      iex> Numbers.add(Ratio.new(1, 3), Decimal.new("3.14"))
+      Ratio.new(521, 150)
   """
-  def add(a, b)
+  def add(lhs, rhs)
 
   def add(%Ratio{numerator: a, denominator: lcm}, %Ratio{numerator: c, denominator: lcm}) do
     Ratio.new(Kernel.+(a, c), lcm)
@@ -273,10 +291,35 @@ defmodule Ratio do
     Ratio.new(Kernel.+(a * d, c * b), b * d)
   end
 
+  def add(lhs = %Ratio{}, rhs) when is_integer(rhs) do
+    add(lhs, Ratio.new(rhs))
+  end
+
   @doc """
-  Subtracts the rational number *b* from the rational number *a*.
+  Subtracts the rational number *rhs* from the rational number *lhs*.
+
+      iex> Ratio.sub(Ratio.new(1, 4), Ratio.new(2, 4))
+      Ratio.new(-1, 4)
+
+  For ease of use, `rhs` is allowed to be an integer as well:
+
+      iex> Ratio.sub(Ratio.new(1, 4), 2)
+      Ratio.new(-7, 4)
+
+  To perform addition where one of the operands might be another numeric type,
+  use `Numbers.sub/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.sub(Ratio.new(1, 3), Decimal.new("3.14"))
+      ** (FunctionClauseError) no function clause matching in Ratio.sub/2
+
+      iex> Numbers.sub(Ratio.new(1, 3), Decimal.new("3.14"))
+      Ratio.new(-421, 150)
   """
-  def sub(a, b), do: add(a, minus(b))
+  def sub(lhs, rhs)
+
+  def sub(lhs = %Ratio{}, rhs = %Ratio{}), do: add(lhs, minus(rhs))
+  def sub(lhs = %Ratio{}, rhs) when is_integer(rhs), do: add(lhs, -rhs)
 
   @doc """
   Negates the given rational number.
@@ -293,12 +336,25 @@ defmodule Ratio do
   @doc """
   Multiplies two rational numbers.
 
-  # Examples
+      iex> Ratio.mult( Ratio.new(1, 3), Ratio.new(1, 2))
+      Ratio.new(1, 6)
 
-  iex> Ratio.mult( Ratio.new(1, 3), Ratio.new(1, 2))
-  Ratio.new(1, 6)
+  For ease of use, allows `rhs` to be an integer as well as a `Ratio` struct.
+
+      iex> Ratio.mult( Ratio.new(1, 3), 2)
+      Ratio.new(2, 3)
+
+  To perform multiplication where one of the operands might be another numeric type,
+  use `Numbers.mult/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.mult( Ratio.new(1, 3), Decimal.new("3.14"))
+      ** (FunctionClauseError) no function clause matching in Ratio.mult/2
+
+      iex> Numbers.mult( Ratio.new(1, 3), Decimal.new("3.14"))
+      Ratio.new(157, 150)
   """
-  def mult(number1, number2)
+  def mult(lhs, rhs)
 
   def mult(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{
         numerator: numerator2,
@@ -307,22 +363,42 @@ defmodule Ratio do
     Ratio.new(Kernel.*(numerator1, numerator2), Kernel.*(denominator1, denominator2))
   end
 
+  def mult(lhs = %Ratio{}, rhs) when is_integer(rhs) do
+    mult(lhs, Ratio.new(rhs))
+  end
+
   @doc """
-  Divides the rational number *a* by the rational number *b*.
+  Divides the rational number `lhs` by the rational number `rhs`.
 
-  ## Examples
+      iex> Ratio.div(Ratio.new(2, 3), Ratio.new(8, 5))
+      Ratio.new(5, 12)
 
-  iex> Ratio.div(Ratio.new(2, 3), Ratio.new(8, 5))
-  Ratio.new(5, 12)
+  For ease of use, allows `rhs` to be an integer as well as a `Ratio` struct.
 
+      iex> Ratio.div(Ratio.new(2, 3), 10)
+      Ratio.new(2, 30)
+
+  To perform division where one of the operands might be another numeric type,
+  use `Numbers.div/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.div(Ratio.new(2, 3), Decimal.new(10))
+      ** (FunctionClauseError) no function clause matching in Ratio.div/2
+
+      iex> Numbers.div(Ratio.new(2, 3), Decimal.new(10))
+      Ratio.new(2, 30)
   """
-  def div(a, b)
+  def div(lhs, rhs)
 
   def div(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{
         numerator: numerator2,
         denominator: denominator2
       }) do
     Ratio.new(Kernel.*(numerator1, denominator2), Kernel.*(denominator1, numerator2))
+  end
+
+  def div(lhs = %Ratio{}, rhs) when is_integer(rhs) do
+    div(lhs, Ratio.new(rhs))
   end
 
   defmodule ComparisonError do
