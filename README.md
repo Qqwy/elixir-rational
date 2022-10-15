@@ -98,6 +98,7 @@ Ratio.new(183, 8)
   - Remove infix operator `<|>` as its usage is deprecated in Elixir v1.14. This is a backwards-incompatible change. If you want to use the old syntax with the new version, add `defdelegate num <|> denom, to: Ratio, as: :new` to your module. Alternatively, you might want to use the not-deprecated `<~>` operator for this instead.
   - Switch the `Inspect` implementation to use the form `Ratio.new(10, 20)` instead of `10 <|> 20`, related to above. This is also a backwards-incompatible change.
   - Remove implementation of `String.Chars`, as the earlier implementation was not a (non-programmer) human-readable format.
+  - Ensure that the right-hand-side operand of calls to `Ratio.{add, sub, mult, div}/2` is allowed to be an integer for ease of use and backwards compatibility. Thank you for noticing this problem, @kipcole9 ! (c.f. #111)
 - 3.0.2 - 
   - Fixes: A bug with `<|>` when the numerator was a rational and the denuminator an integer. (c.f. #104) Thank you, @varsill!
 - 3.0.1 -
