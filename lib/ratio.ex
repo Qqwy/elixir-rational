@@ -308,21 +308,38 @@ defmodule Ratio do
   end
 
   @doc """
-  Divides the rational number *a* by the rational number *b*.
+  Divides the rational number `lhs` by the rational number `rhs`.
 
-  ## Examples
+      iex> Ratio.div(Ratio.new(2, 3), Ratio.new(8, 5))
+      Ratio.new(5, 12)
 
-  iex> Ratio.div(Ratio.new(2, 3), Ratio.new(8, 5))
-  Ratio.new(5, 12)
+  For ease of use, allows `rhs` to be an integer as well as a `Ratio` struct.
+
+      iex> Ratio.div(Ratio.new(2, 3), 10)
+      Ratio.new(2, 30)
+
+  To perform division where one of the operands might be another numeric type,
+  use `Numbers.div/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.div(Ratio.new(2, 3), Decimal.new(10))
+      ** (FunctionClauseError) no function clause matching in Ratio.div/2
+
+      iex> Numbers.div(Ratio.new(2, 3), Decimal.new(10))
+      Ratio.new(2, 30)
 
   """
-  def div(a, b)
+  def div(lhs, rhs)
 
   def div(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{
         numerator: numerator2,
         denominator: denominator2
       }) do
     Ratio.new(Kernel.*(numerator1, denominator2), Kernel.*(denominator1, numerator2))
+  end
+
+  def div(lhs = %Ratio{}, rhs) when is_integer(rhs) do
+    div(lhs, Ratio.new(rhs))
   end
 
   defmodule ComparisonError do
