@@ -262,8 +262,26 @@ defmodule Ratio do
 
   @doc """
   Adds two rational numbers.
+
+      iex> Ratio.add(Ratio.new(1, 4), Ratio.new(2, 4))
+      Ratio.new(3, 4)
+
+  For ease of use, `rhs` is allowed to be an integer as well:
+
+      iex> Ratio.add(Ratio.new(1, 4), 2)
+      Ratio.new(9, 4)
+
+  To perform addition where one of the operands might be another numeric type,
+  use `Numbers.add/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.add(Ratio.new(1, 3), Decimal.new("3.14"))
+      ** (FunctionClauseError) no function clause matching in Ratio.add/2
+
+      iex> Numbers.add(Ratio.new(1, 3), Decimal.new("3.14"))
+      Ratio.new(521, 150)
   """
-  def add(a, b)
+  def add(lhs, rhs)
 
   def add(%Ratio{numerator: a, denominator: lcm}, %Ratio{numerator: c, denominator: lcm}) do
     Ratio.new(Kernel.+(a, c), lcm)
@@ -273,10 +291,35 @@ defmodule Ratio do
     Ratio.new(Kernel.+(a * d, c * b), b * d)
   end
 
+  def add(lhs = %Ratio{}, rhs) when is_integer(rhs) do
+    add(lhs, Ratio.new(rhs))
+  end
+
   @doc """
-  Subtracts the rational number *b* from the rational number *a*.
+  Subtracts the rational number *rhs* from the rational number *lhs*.
+
+      iex> Ratio.sub(Ratio.new(1, 4), Ratio.new(2, 4))
+      Ratio.new(-1, 4)
+
+  For ease of use, `rhs` is allowed to be an integer as well:
+
+      iex> Ratio.sub(Ratio.new(1, 4), 2)
+      Ratio.new(-7, 4)
+
+  To perform addition where one of the operands might be another numeric type,
+  use `Numbers.sub/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.sub(Ratio.new(1, 3), Decimal.new("3.14"))
+      ** (FunctionClauseError) no function clause matching in Ratio.sub/2
+
+      iex> Numbers.sub(Ratio.new(1, 3), Decimal.new("3.14"))
+      Ratio.new(-421, 150)
   """
-  def sub(a, b), do: add(a, minus(b))
+  def sub(lhs, rhs)
+
+  def sub(lhs = %Ratio{}, rhs = %Ratio{}), do: add(lhs, minus(rhs))
+  def sub(lhs = %Ratio{}, rhs) when is_integer(rhs), do: add(lhs, -rhs)
 
   @doc """
   Negates the given rational number.
@@ -311,7 +354,7 @@ defmodule Ratio do
       iex> Numbers.mult( Ratio.new(1, 3), Decimal.new("3.14"))
       Ratio.new(157, 150)
   """
-  def mult(number1, number2)
+  def mult(lhs, rhs)
 
   def mult(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{
         numerator: numerator2,
