@@ -22,4 +22,8 @@ defmodule Ratio.DecimalConversionTest do
                unquote(Macro.escape(output))
     end
   end
+
+  test "Create a ratio with only a Decimal numerator and no denominator (regression test for #111)" do
+    assert Ratio.new(Decimal.new(1)) == Ratio.new(1, 1)
+  end
 end
