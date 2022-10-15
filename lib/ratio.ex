@@ -293,10 +293,23 @@ defmodule Ratio do
   @doc """
   Multiplies two rational numbers.
 
-  # Examples
+      iex> Ratio.mult( Ratio.new(1, 3), Ratio.new(1, 2))
+      Ratio.new(1, 6)
 
-  iex> Ratio.mult( Ratio.new(1, 3), Ratio.new(1, 2))
-  Ratio.new(1, 6)
+  For ease of use, allows `rhs` to be an integer as well as a `Ratio` struct.
+
+      iex> Ratio.mult( Ratio.new(1, 3), 2)
+      Ratio.new(2, 3)
+
+  To perform multiplication where one of the operands might be another numeric type,
+  use `Numbers.mult/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.mult( Ratio.new(1, 3), Decimal.new("3.14"))
+      ** (FunctionClauseError) no function clause matching in Ratio.mult/2
+
+      iex> Numbers.mult( Ratio.new(1, 3), Decimal.new("3.14"))
+      Ratio.new(157, 150)
   """
   def mult(number1, number2)
 
@@ -305,6 +318,10 @@ defmodule Ratio do
         denominator: denominator2
       }) do
     Ratio.new(Kernel.*(numerator1, numerator2), Kernel.*(denominator1, denominator2))
+  end
+
+  def mult(lhs = %Ratio{}, rhs) when is_integer(rhs) do
+    mult(lhs, Ratio.new(rhs))
   end
 
   @doc """
@@ -327,7 +344,6 @@ defmodule Ratio do
 
       iex> Numbers.div(Ratio.new(2, 3), Decimal.new(10))
       Ratio.new(2, 30)
-
   """
   def div(lhs, rhs)
 
