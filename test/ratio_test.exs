@@ -3,59 +3,76 @@ defmodule RatioTest do
   use ExUnitProperties
   import TestHelper
 
-  import Ratio, only: [<|>: 2, is_rational: 1]
+  import Ratio, only: [is_rational: 1]
+
+  # Example used by a module-doc doctest in the Ratio module
+  defmodule IDoAlotOfMathHere do
+    defdelegate numerator <~> denominator, to: Ratio, as: :new
+    use Numbers, overload_operators: true
+
+    def calculate(input) do
+      num = input <~> 2
+      result = num * 2 + (3 <~> 4) * 5.0
+      result / 2
+    end
+  end
+
   doctest Ratio
   doctest Ratio.FloatConversion
 
-  test "definition of <|> operator" do
-    assert 1 <|> 3 == %Ratio{numerator: 1, denominator: 3}
+  # This way we can use the shorthand syntax in this module
+  # And 'test' it at the same time :-)
+  defdelegate numerator <~> denominator, to: Ratio, as: :new
+
+  test "definition of <~> operator" do
+    assert 1 <~> 3 == %Ratio{numerator: 1, denominator: 3}
   end
 
-  test "reject _ <|> 0" do
-    assert_raise ArithmeticError, fn -> 1 <|> 0 end
-    assert_raise ArithmeticError, fn -> 1234 <|> 0 end
+  test "reject _ <~> 0" do
+    assert_raise ArithmeticError, fn -> 1 <~> 0 end
+    assert_raise ArithmeticError, fn -> 1234 <~> 0 end
   end
 
   test "inspect protocol" do
-    assert Inspect.inspect(1 <|> 2, []) == "1 <|> 2"
+    assert Inspect.inspect(Ratio.new(1, 2), []) == "Ratio.new(1, 2)"
   end
 
   test "compare/2" do
     assert Ratio.compare(1, 2) == :lt
     assert Ratio.compare(2, 1) == :gt
-    assert Ratio.compare(1 <|> 2, 2 <|> 3) == :lt
-    assert Ratio.compare(1 <|> 2, 2 <|> 4) == :eq
+    assert Ratio.compare(1 <~> 2, 2 <~> 3) == :lt
+    assert Ratio.compare(1 <~> 2, 2 <~> 4) == :eq
   end
 
   test "lt?/2, lte?/2, gt?/1, gte?/2, equal?/2" do
-    assert Ratio.lt?(1 <|> 2, 1)
-    refute Ratio.lt?(2, 1 <|> 2)
-    refute Ratio.lt?(1 <|> 2, 1 <|> 2)
+    assert Ratio.lt?(1 <~> 2, 1)
+    refute Ratio.lt?(2, 1 <~> 2)
+    refute Ratio.lt?(1 <~> 2, 1 <~> 2)
 
-    refute Ratio.gt?(1 <|> 2, 1)
-    assert Ratio.gt?(1 <|> 2, 1 <|> 4)
+    refute Ratio.gt?(1 <~> 2, 1)
+    assert Ratio.gt?(1 <~> 2, 1 <~> 4)
 
-    assert Ratio.gte?(1 <|> 2, 1 <|> 4)
-    assert Ratio.gte?(1 <|> 2, 1 <|> 2)
-    refute Ratio.gte?(1 <|> 4, 1 <|> 2)
+    assert Ratio.gte?(1 <~> 2, 1 <~> 4)
+    assert Ratio.gte?(1 <~> 2, 1 <~> 2)
+    refute Ratio.gte?(1 <~> 4, 1 <~> 2)
 
-    assert Ratio.lte?(1 <|> 4, 1 <|> 2)
-    assert Ratio.lte?(1 <|> 2, 1 <|> 2)
-    refute Ratio.lte?(1 <|> 2, 1 <|> 4)
+    assert Ratio.lte?(1 <~> 4, 1 <~> 2)
+    assert Ratio.lte?(1 <~> 2, 1 <~> 2)
+    refute Ratio.lte?(1 <~> 2, 1 <~> 4)
 
-    assert Ratio.equal?(1 <|> 3, 1 <|> 3)
-    refute Ratio.equal?(1 <|> 3, 1 <|> 4)
+    assert Ratio.equal?(1 <~> 3, 1 <~> 3)
+    refute Ratio.equal?(1 <~> 3, 1 <~> 4)
   end
 
   test "small number precision" do
     assert Ratio.equal?(
              Ratio.new(1.602177e-19),
-             1_663_795_720_783_351 <|> 10_384_593_717_069_655_257_060_992_658_440_192
+             1_663_795_720_783_351 <~> 10_384_593_717_069_655_257_060_992_658_440_192
            )
 
     assert Ratio.equal?(
              Ratio.new(1.49241808560e-10),
-             5_773_512_823_493_363 <|> 38_685_626_227_668_133_590_597_632
+             5_773_512_823_493_363 <~> 38_685_626_227_668_133_590_597_632
            )
   end
 

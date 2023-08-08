@@ -15,12 +15,27 @@ defmodule Ratio do
 
   `Ratio` defines arithmetic and comparison operations to work with rational numbers.
 
-  Usually, you probably want to add the line `import Ratio, only: [<|>: 2]` to your code.
 
-  ## Shorthand operator
+  This module also contains:
+  - a guard-safe `is_rational/1` check.
+  - a `compare/2` function for use with e.g. `Enum.sort`.
+  - `to_float/1` to (lossly) convert a rational into a float.
 
-  Rational numbers can be written using the operator `<|>` (as in: `1 <|> 2`), which is also how Ratio structs are pretty-printed when inspecting.
-  `a <|> b` is a shorthand for `Ratio.new(a, b)`.
+  # Shorthand infix construction operator
+
+  Since version 4.0, `Ratio` no longer defines an infix operator to create rational numbers.
+  Instead, rational numbers are made using `Ratio.new`,
+  and as the output from using an existing `Ratio` struct with a mathematical operation.
+
+  If you do want to use an infix operator such as
+  `<~>` (supported in all Elixir versions)
+  or `<|>` (deprecated in Elixir v1.14, the default of older versions of the `Ratio` library)
+
+  you can add the following one-liner to the module(s) in which you want to use it:
+
+  ```elixir
+  defdelegate numerator <~> denominator, to: Ratio, as: :new
+  ```
 
   ## Inline Math Operators and Casting
 
@@ -31,16 +46,37 @@ defmodule Ratio do
   and an integer, float or Decimal (if you have installed the `Decimal` library),
   which are then cast to rational numbers whenever necessary.
 
+  ``` elixir
+  defmodule IDoAlotOfMathHere do
+    defdelegate numerator <~> denominator, to: Ratio, as: :new
+    use Numbers, overload_operators: true
+
+    def calculate(input) do
+      num = input <~> 2
+      result = num * 2 + (3 <~> 4) * 5.0
+      result / 2
+    end
+  end
+  ```
+
+  ```
+  iex> IDoAlotOfMathHere.calculate(42)
+  Ratio.new(183, 8)
+  ```
+
+
+
   """
 
   defmacro __using__(_opts) do
     raise """
-    Writing `use Ratio` (with or without options) is no longer possible in version 3.
+    Writing `use Ratio` (with or without options) is no longer possible since v3.0.
 
     Instead:
 
-    - To only use the rational number creation shorthand operator, write `import Ratio, only: [<|>: 2]`
-    - To override the inline math operators, write `use Numbers, overload_operators: true`. (and see the `Numbers` module/library for more information.)
+    - For basic usage, call functions of the `Ratio` module directly without `use` or `import`.
+    - To add an infix operator for rational number creation, write `defdelegate numerator <|> denominator, to: Ratio, as: :new`.
+    - To override the inline math operators, write `use Numbers, overload_operators: true`. (and see the `Numbers` module/library documentation for more information.)
     """
   end
 
@@ -51,7 +87,7 @@ defmodule Ratio do
 
   Note that *directly manipulating* the struct, however, is usually a bad idea, as then there are no validity checks, nor wil the rational be simplified.
 
-  Use `Ratio.<|>/2` or `Ratio.new/2` instead.
+  Use `Ratio.new/2` instead.
   """
   defstruct numerator: 0, denominator: 1
   @type t :: %Ratio{numerator: integer(), denominator: pos_integer()}
@@ -62,7 +98,7 @@ defmodule Ratio do
   On recent OTP versions that expose `:erlang.map_get/2` this function is guard safe.
 
   iex> require Ratio
-  iex> Ratio.is_rational(1 <|> 2)
+  iex> Ratio.is_rational(Ratio.new(1, 2))
   true
   iex> Ratio.is_rational(Ratio.new(10))
   true
@@ -107,111 +143,73 @@ defmodule Ratio do
 
   ## Examples
 
-      iex> 1 <|> 2
-      1 <|> 2
-      iex> 100 <|> 300
-      1 <|> 3
-      iex> 1.5 <|> 4
-      3 <|> 8
-      iex> (3 <|> 2) <|> 3
-      1 <|> 2
-      iex> 3 <|> (3<|>2)
-      2 <|> 1
-      iex> (3<|>2) <|> (1<|>3)
-      9 <|> 2
+      iex> Ratio.new(1, 2)
+      Ratio.new(1, 2)
+      iex> Ratio.new(100, 300)
+      Ratio.new(1, 3)
+      iex> Ratio.new(1.5, 4)
+      Ratio.new(3, 8)
+      iex> Ratio.new(Ratio.new(3, 2), 3)
+      Ratio.new(1, 2)
+      iex> Ratio.new(Ratio.new(3, 3), 2)
+      Ratio.new(1, 2)
+      iex> Ratio.new(Ratio.new(3, 2), Ratio.new(1, 3))
+      Ratio.new(9, 2)
   """
-  def numerator <|> denominator
+  def new(numerator, denominator \\ 1)
 
-  def _numerator <|> 0 do
+  def new(_numerator, 0) do
     raise ArithmeticError
   end
 
-  def numerator <|> denominator when is_integer(numerator) and is_integer(denominator) do
+  def new(numerator, denominator) when is_integer(numerator) and is_integer(denominator) do
     simplify(%Ratio{numerator: numerator, denominator: denominator})
   end
 
-  def numerator <|> denominator when is_float(numerator) do
+  def new(numerator, denominator) when is_float(numerator) do
     div(Ratio.FloatConversion.float_to_rational(numerator), Ratio.new(denominator))
   end
 
-  def numerator <|> denominator when is_float(denominator) do
+  def new(numerator, denominator) when is_float(denominator) do
     div(numerator, Ratio.FloatConversion.float_to_rational(denominator))
   end
 
-  def (numerator = %Ratio{}) <|> (denominator = %Ratio{}) do
+  def new(numerator = %Ratio{}, denominator = %Ratio{}) do
     div(numerator, denominator)
   end
 
   if Code.ensure_loaded?(Decimal) do
-    def (numerator = %Decimal{}) <|> (denominator = %Decimal{}) do
+    def new(numerator = %Decimal{}, denominator = %Decimal{}) do
       Ratio.DecimalConversion.decimal_to_rational(numerator)
       |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
     end
 
-    def (numerator = %Decimal{}) <|> denominator when is_float(denominator) do
+    def new(numerator = %Decimal{}, denominator) when is_float(denominator) do
       Ratio.DecimalConversion.decimal_to_rational(numerator)
       |> div(Ratio.FloatConversion.float_to_rational(denominator))
     end
 
-    def numerator <|> (denominator = %Decimal{}) when is_float(numerator) do
+    def new(numerator, denominator = %Decimal{}) when is_float(numerator) do
       Ratio.FloatConversion.float_to_rational(numerator)
       |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
     end
 
-    def (numerator = %Decimal{}) <|> denominator when is_integer(denominator) do
+    def new(numerator = %Decimal{}, denominator) when is_integer(denominator) do
       Ratio.DecimalConversion.decimal_to_rational(numerator)
       |> div(denominator)
     end
 
-    def numerator <|> (denominator = %Decimal{}) when is_integer(numerator) do
+    def new(numerator, denominator = %Decimal{}) when is_integer(numerator) do
       div(Ratio.DecimalConversion.decimal_to_rational(numerator), denominator)
     end
   end
 
-  def numerator <|> (denominator = %Ratio{}) when is_integer(numerator) do
+  def new(numerator, denominator = %Ratio{}) when is_integer(numerator) do
     div(%Ratio{numerator: numerator, denominator: 1}, denominator)
   end
 
-  def (numerator = %Ratio{}) <|> denominator when is_integer(denominator) do
+  def new(numerator = %Ratio{}, denominator) when is_integer(denominator) do
     div(numerator, %Ratio{numerator: denominator, denominator: 1})
-  end
-
-  @doc """
-  Prefix-version of `numerator <|> denominator`.
-  Useful when `<|>` is not available (for instance, when already in use by another module)
-
-  Not imported when calling `use Ratio`, so always call it as `Ratio.new(a, b)`
-
-  To use `Decimal` parameters, the [decimal](https://hex.pm/packages/decimal) library must
-  be configured in `mix.exs`.
-
-  ## Examples
-
-      iex> Ratio.new(1, 2)
-      1 <|> 2
-      iex> Ratio.new(100, 300)
-      1 <|> 3
-
-  """
-  def new(numerator, denominator \\ 1)
-
-  if Code.ensure_loaded?(Decimal) do
-    def new(%Decimal{} = decimal, 1) do
-      Ratio.DecimalConversion.decimal_to_rational(decimal)
-    end
-
-    def new(%Decimal{} = numerator, %Decimal{} = denominator) do
-      Ratio.DecimalConversion.decimal_to_rational(numerator)
-      <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
-    end
-
-    def new(numerator, %Decimal{} = denominator) do
-      numerator <|> Ratio.DecimalConversion.decimal_to_rational(denominator)
-    end
-  end
-
-  def new(numerator, denominator) do
-    numerator <|> denominator
   end
 
   @doc """
@@ -219,13 +217,13 @@ defmodule Ratio do
 
   ## Examples
 
-      iex>Ratio.abs(-5 <|> 2)
-      5 <|> 2
+      iex>Ratio.abs(Ratio.new(-5, 2))
+      Ratio.new(5, 2)
   """
   def abs(number) when is_number(number), do: Kernel.abs(number)
 
   def abs(%Ratio{numerator: numerator, denominator: denominator}),
-    do: Kernel.abs(numerator) <|> denominator
+    do: Ratio.new(Kernel.abs(numerator), denominator)
 
   @doc """
   Returns the sign of the given number (which might be an integer, float or Rational)
@@ -264,29 +262,72 @@ defmodule Ratio do
 
   @doc """
   Adds two rational numbers.
+
+      iex> Ratio.add(Ratio.new(1, 4), Ratio.new(2, 4))
+      Ratio.new(3, 4)
+
+  For ease of use, `rhs` is allowed to be an integer as well:
+
+      iex> Ratio.add(Ratio.new(1, 4), 2)
+      Ratio.new(9, 4)
+
+  To perform addition where one of the operands might be another numeric type,
+  use `Numbers.add/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.add(Ratio.new(1, 3), Decimal.new("3.14"))
+      ** (FunctionClauseError) no function clause matching in Ratio.add/2
+
+      iex> Numbers.add(Ratio.new(1, 3), Decimal.new("3.14"))
+      Ratio.new(521, 150)
   """
-  def add(a, b)
+  def add(lhs, rhs)
 
   def add(%Ratio{numerator: a, denominator: lcm}, %Ratio{numerator: c, denominator: lcm}) do
-    Kernel.+(a, c) <|> lcm
+    Ratio.new(Kernel.+(a, c), lcm)
   end
 
   def add(%Ratio{numerator: a, denominator: b}, %Ratio{numerator: c, denominator: d}) do
-    Kernel.+(a * d, c * b) <|> (b * d)
+    Ratio.new(Kernel.+(a * d, c * b), b * d)
+  end
+
+  def add(lhs = %Ratio{}, rhs) when is_integer(rhs) do
+    add(lhs, Ratio.new(rhs))
   end
 
   @doc """
-  Subtracts the rational number *b* from the rational number *a*.
+  Subtracts the rational number *rhs* from the rational number *lhs*.
+
+      iex> Ratio.sub(Ratio.new(1, 4), Ratio.new(2, 4))
+      Ratio.new(-1, 4)
+
+  For ease of use, `rhs` is allowed to be an integer as well:
+
+      iex> Ratio.sub(Ratio.new(1, 4), 2)
+      Ratio.new(-7, 4)
+
+  To perform addition where one of the operands might be another numeric type,
+  use `Numbers.sub/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.sub(Ratio.new(1, 3), Decimal.new("3.14"))
+      ** (FunctionClauseError) no function clause matching in Ratio.sub/2
+
+      iex> Numbers.sub(Ratio.new(1, 3), Decimal.new("3.14"))
+      Ratio.new(-421, 150)
   """
-  def sub(a, b), do: add(a, minus(b))
+  def sub(lhs, rhs)
+
+  def sub(lhs = %Ratio{}, rhs = %Ratio{}), do: add(lhs, minus(rhs))
+  def sub(lhs = %Ratio{}, rhs) when is_integer(rhs), do: add(lhs, -rhs)
 
   @doc """
   Negates the given rational number.
 
   ## Examples
 
-  iex> Ratio.minus(5 <|> 3)
-  -5 <|> 3
+  iex> Ratio.minus(Ratio.new(5, 3))
+  Ratio.new(-5, 3)
   """
   def minus(%Ratio{numerator: numerator, denominator: denominator}) do
     %Ratio{numerator: Kernel.-(numerator), denominator: denominator}
@@ -295,36 +336,69 @@ defmodule Ratio do
   @doc """
   Multiplies two rational numbers.
 
-  # Examples
+      iex> Ratio.mult( Ratio.new(1, 3), Ratio.new(1, 2))
+      Ratio.new(1, 6)
 
-  iex> Ratio.mult( 1 <|> 3, 1 <|> 2)
-  1 <|> 6
+  For ease of use, allows `rhs` to be an integer as well as a `Ratio` struct.
+
+      iex> Ratio.mult( Ratio.new(1, 3), 2)
+      Ratio.new(2, 3)
+
+  To perform multiplication where one of the operands might be another numeric type,
+  use `Numbers.mult/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.mult( Ratio.new(1, 3), Decimal.new("3.14"))
+      ** (FunctionClauseError) no function clause matching in Ratio.mult/2
+
+      iex> Numbers.mult( Ratio.new(1, 3), Decimal.new("3.14"))
+      Ratio.new(157, 150)
   """
-  def mult(number1, number2)
+  def mult(lhs, rhs)
 
   def mult(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{
         numerator: numerator2,
         denominator: denominator2
       }) do
-    Kernel.*(numerator1, numerator2) <|> Kernel.*(denominator1, denominator2)
+    Ratio.new(Kernel.*(numerator1, numerator2), Kernel.*(denominator1, denominator2))
+  end
+
+  def mult(lhs = %Ratio{}, rhs) when is_integer(rhs) do
+    mult(lhs, Ratio.new(rhs))
   end
 
   @doc """
-  Divides the rational number *a* by the rational number *b*.
+  Divides the rational number `lhs` by the rational number `rhs`.
 
-  ## Examples
+      iex> Ratio.div(Ratio.new(2, 3), Ratio.new(8, 5))
+      Ratio.new(5, 12)
 
-  iex> Ratio.div(2 <|> 3, 8 <|> 5)
-  5 <|> 12
+  For ease of use, allows `rhs` to be an integer as well as a `Ratio` struct.
 
+      iex> Ratio.div(Ratio.new(2, 3), 10)
+      Ratio.new(2, 30)
+
+  To perform division where one of the operands might be another numeric type,
+  use `Numbers.div/2` instead, as this will perform the required coercions
+  between the number types:
+
+      iex> Ratio.div(Ratio.new(2, 3), Decimal.new(10))
+      ** (FunctionClauseError) no function clause matching in Ratio.div/2
+
+      iex> Numbers.div(Ratio.new(2, 3), Decimal.new(10))
+      Ratio.new(2, 30)
   """
-  def div(a, b)
+  def div(lhs, rhs)
 
   def div(%Ratio{numerator: numerator1, denominator: denominator1}, %Ratio{
         numerator: numerator2,
         denominator: denominator2
       }) do
-    Kernel.*(numerator1, denominator2) <|> Kernel.*(denominator1, numerator2)
+    Ratio.new(Kernel.*(numerator1, denominator2), Kernel.*(denominator1, numerator2))
+  end
+
+  def div(lhs = %Ratio{}, rhs) when is_integer(rhs) do
+    div(lhs, Ratio.new(rhs))
   end
 
   defmodule ComparisonError do
@@ -406,13 +480,13 @@ defmodule Ratio do
   ## Examples
 
       iex> Ratio.pow(Ratio.new(2), 4)
-      16 <|> 1
+      Ratio.new(16, 1)
       iex> Ratio.pow(Ratio.new(2), -4)
-      1 <|> 16
-      iex> Ratio.pow(3 <|> 2, 10)
-      59049 <|> 1024
+      Ratio.new(1, 16)
+      iex> Ratio.pow(Ratio.new(3, 2), 10)
+      Ratio.new(59049, 1024)
       iex> Ratio.pow(Ratio.new(10), 0)
-      1 <|> 1
+      Ratio.new(1, 1)
   """
   @spec pow(number() | Ratio.t(), pos_integer()) :: Ratio.t()
   def pow(x, n)
@@ -431,7 +505,7 @@ defmodule Ratio do
   defp do_pow(x, n, y \\ 1)
   defp do_pow(_x, 0, y), do: y
   defp do_pow(x, 1, y), do: Numbers.mult(x, y)
-  defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(1 <|> x, Kernel.-(n), y)
+  defp do_pow(x, n, y) when Kernel.<(n, 0), do: do_pow(Ratio.new(1, x), Kernel.-(n), y)
 
   defp do_pow(x, n, y) when rem(n, 2) |> Kernel.==(0) do
     do_pow(Ratio.mult(x, x), Kernel.div(n, 2), y)
@@ -443,8 +517,6 @@ defmodule Ratio do
 
   @doc """
   Converts the given *number* to a Float. As floats do not have arbitrary precision, this operation is generally not reversible.
-
-  Not imported when calling `use Ratio`, so always call it as `Rational.to_float(number)`
   """
   @spec to_float(Ratio.t() | number) :: float
   def to_float(%Ratio{numerator: numerator, denominator: denominator}),
@@ -462,9 +534,9 @@ defmodule Ratio do
   ## Examples
 
       iex> Ratio.to_float_error(Ratio.new(1, 2))
-      {0.5, 0 <|> 1}
+      {0.5, Ratio.new(0, 1)}
       iex> Ratio.to_float_error(Ratio.new(2, 3))
-      {0.6666666666666666, -1 <|> 27021597764222976}
+      {0.6666666666666666, Ratio.new(-1, 27021597764222976)}
   """
   @spec to_float_error(t | number) :: {float, error} when error: t | number
   def to_float_error(number) do
@@ -475,26 +547,26 @@ defmodule Ratio do
 
   @doc """
   Returns a binstring representation of the Rational number.
-  If the denominator is `1` it will still be printed in the `a <|> 1` format.
+  If the denominator is `1` it will still be printed wrapped with `Ratio.new`.
 
   ## Examples
 
-      iex> Ratio.to_string 10 <|> 7
-      "10 <|> 7"
-      iex> Ratio.to_string 10 <|> 2
-      "5 <|> 1"
+      iex> Ratio.to_string Ratio.new(10, 7)
+      "Ratio.new(10, 7)"
+      iex> Ratio.to_string Ratio.new(10, 2)
+      "Ratio.new(5, 1)"
   """
   def to_string(rational)
 
   def to_string(%Ratio{numerator: numerator, denominator: denominator}) do
-    "#{numerator} <|> #{denominator}"
+    "Ratio.new(#{numerator}, #{denominator})"
   end
 
-  defimpl String.Chars, for: Ratio do
-    def to_string(rational) do
-      Ratio.to_string(rational)
-    end
-  end
+  # defimpl String.Chars, for: Ratio do
+  #   def to_string(rational) do
+  #     Ratio.to_string(rational)
+  #   end
+  # end
 
   defimpl Inspect, for: Ratio do
     def inspect(rational, _) do

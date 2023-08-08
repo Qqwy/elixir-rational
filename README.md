@@ -13,30 +13,43 @@ Ratio follows the Numeric behaviour from [Numbers](https://github.com/Qqwy/elixi
 
 `Ratio` defines arithmetic and comparison operations to work with rational numbers.
 
-Usually, you probably want to add the line `import Ratio, only: [<|>: 2]` to your code.
+Rational numbers can be created by using `Ratio.new/2`,
+or by calling mathematical operators where one of the two operands is already a rational number.
 
-### Shorthand operator
 
-Rational numbers can be written using the operator `<|>` (as in: `1 <|> 2`), which is also how Ratio structs are pretty-printed when inspecting.
-`a <|> b` is a shorthand for `Ratio.new(a, b)`.
+### Shorthand infix construction operator
+
+Since version 4.0, `Ratio` no longer defines an infix operator to create rational numbers.
+Instead, rational numbers are made using `Ratio.new`,
+and as the output from using an existing `Ratio` struct with a mathematical operation.
+
+If you do want to use an infix operator such as
+`<~>` (supported in all Elixir versions)
+or `<|>` (deprecated in Elixir v1.14, the default of older versions of the `Ratio` library)
+
+you can add the following one-liner to the module(s) in which you want to use it:
+
+```elixir
+defdelegate numerator <~> denominator, to: Ratio, as: :new
+```
 
 ### Basic functionality
 
 Rational numbers can be manipulated using the functions in the [`Ratio`](https://hexdocs.pm/ratio/Ratio.html) module.
 
 ```elixir
-iex> Ratio.mult( 1 <|> 3, 1 <|> 2)
-1 <|> 6
-iex> Ratio.div(2 <|> 3, 8 <|> 5)
-5 <|> 12
+iex> Ratio.mult(Ratio.new(1, 3), Ratio.new(1, 2))
+Ratio.new(1, 6)
+iex> Ratio.div(Ratio.new(2, 3), Ratio.new(8, 5))
+Ratio.new(5, 12)
 iex> Ratio.pow(Ratio.new(2), 4)
-16 <|> 1
+Ratio.new(16, 1)
 ```
 
-The ratio module also contains:
+The Ratio module also contains:
 - a guard-safe `is_rational/1` check.
 - a `compare/2` function for use with e.g. `Enum.sort`.
-- `to_float` to (lossly) convert a rational into a float.
+- `to_float/1` to (lossly) convert a rational into a float.
 
 ### Inline Math Operators and Casting
 
@@ -46,7 +59,26 @@ you can add `use Numbers, overload_operators: true` to your module.
 
 This also allows you to pass in a rational number as one argument
 and an integer, float or Decimal (if you have installed the `Decimal` library),
-which are then cast to rational numbers whenever necessary.
+which are then cast to rational numbers whenever necessary:
+
+``` elixir
+defmodule IDoAlotOfMathHere do
+  defdelegate numerator <~> denominator, to: Ratio, as: :new
+  use Numbers, overload_operators: true
+
+  def calculate(input) do
+     num = input <~> 2
+     result = num * 2 + (3 <~> 4) * 5.0
+     result / 2
+  end
+end
+
+```
+
+``` elixir
+iex> IDoAlotOfMathHere.calculate(42)
+Ratio.new(183, 8)
+```
 
 
 ## Installation
@@ -55,13 +87,18 @@ which are then cast to rational numbers whenever necessary.
 
         def deps do
           [
-            {:ratio, "~> 3.0"}
+            {:ratio, "~> 4.0"}
           ]
         end
 
 
 
 ## Changelog
+- 4.0.0 - 
+  - Remove infix operator `<|>` as its usage is deprecated in Elixir v1.14. This is a backwards-incompatible change. If you want to use the old syntax with the new version, add `defdelegate num <|> denom, to: Ratio, as: :new` to your module. Alternatively, you might want to use the not-deprecated `<~>` operator for this instead.
+  - Switch the `Inspect` implementation to use the form `Ratio.new(10, 20)` instead of `10 <|> 20`, related to above. This is also a backwards-incompatible change.
+  - Remove implementation of `String.Chars`, as the earlier implementation was not a (non-programmer) human-readable format.
+  - Ensure that the right-hand-side operand of calls to `Ratio.{add, sub, mult, div}/2` is allowed to be an integer for ease of use and backwards compatibility. Thank you for noticing this problem, @kipcole9 ! (c.f. #111)
 - 3.0.2 - 
   - Fixes: A bug with `<|>` when the numerator was a rational and the denuminator an integer. (c.f. #104) Thank you, @varsill!
 - 3.0.1 -
@@ -107,8 +144,8 @@ which are then cast to rational numbers whenever necessary.
 
 ## Difference with the 'rational' library
 
-Observant readers might notice that there also is a '[rational](https://hex.pm/packages/rational)' library in Hex.pm. The design idea between that library vs. this one is a bit different: `Ratio` hides the internal data representation as much as possible, and numbers are therefore created using `Rational.<|>/2` or `Ratio.new/2`. This has as mayor advantage that the internal representation is always correct and simplified.
+Observant readers might notice that there also is a '[rational](https://hex.pm/packages/rational)' library in Hex.pm. The design idea between that library vs. this one is a bit different: `Ratio` hides the internal data representation as much as possible, and numbers are therefore only created using `Ratio.new/2`. This has as mayor advantage that the internal representation is always correct and simplified.
 
-The Ratio library also (optionally) overrides the built-in math operations `+, -, *, /, div, abs` so they work with combinations of integers, floats and rationals.
+The Ratio library also (optionally) overrides (by virtue of the `Numbers` library) the built-in math operations `+, -, *, /, div, abs` so they work with combinations of integers, floats and rationals.
 
 Finally, Ratio follows the Numeric behaviour, which means that it can be used with any data types that follow [Numbers](https://github.com/Qqwy/elixir_number).
