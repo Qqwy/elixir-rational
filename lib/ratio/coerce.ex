@@ -12,8 +12,10 @@ Coerce.defcoercion Ratio, Float do
   end
 end
 
-Coerce.defcoercion Ratio, Decimal do
-  def coerce(ratio, decimal) do
-    {ratio, Ratio.DecimalConversion.decimal_to_rational(decimal)}
+if Code.ensure_loaded?(Decimal) do
+  Coerce.defcoercion Ratio, Decimal do
+    def coerce(ratio, decimal) do
+      {ratio, Ratio.DecimalConversion.decimal_to_rational(decimal)}
+    end
   end
 end
