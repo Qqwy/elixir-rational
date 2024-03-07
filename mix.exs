@@ -21,15 +21,12 @@ defmodule Rational.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     extra_applications =
-      case Mix.env() do
-        :test -> [:stream_data, :logger]
-        _ -> [:logger]
+      [:numbers, :logger] ++ case Mix.env() do
+        :test -> [:stream_data]
+        _ -> []
       end
 
     [
-      applications: [
-        :numbers
-      ],
       extra_applications: extra_applications
     ]
   end
