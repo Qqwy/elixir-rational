@@ -4,7 +4,7 @@ defmodule Rational.Mixfile do
   def project do
     [
       app: :ratio,
-      version: "4.0.0",
+      version: "4.0.1",
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,

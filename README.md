@@ -94,6 +94,8 @@ Ratio.new(183, 8)
 
 
 ## Changelog
+- 4.0.1 - 
+  - Fix compiler warnings on Elixir v1.16 (c.f. #128). Thank you, @kidq330
 - 4.0.0 - 
   - Remove infix operator `<|>` as its usage is deprecated in Elixir v1.14. This is a backwards-incompatible change. If you want to use the old syntax with the new version, add `defdelegate num <|> denom, to: Ratio, as: :new` to your module. Alternatively, you might want to use the not-deprecated `<~>` operator for this instead.
   - Switch the `Inspect` implementation to use the form `Ratio.new(10, 20)` instead of `10 <|> 20`, related to above. This is also a backwards-incompatible change.
