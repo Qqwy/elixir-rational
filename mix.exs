@@ -49,7 +49,7 @@ defmodule Rational.Mixfile do
       # Generic arithmetic dispatching.
       {:numbers, "~> 5.2.0"},
       # If Decimal number support is required
-      {:decimal, "~> 1.6 or ~> 2.0", optional: true},
+      {:decimal, "~> 1.6 or ~> 2.0 or ~> 3.0", optional: true},
       {:stream_data, "~> 0.1", only: [:dev, :test]}
     ]
   end
