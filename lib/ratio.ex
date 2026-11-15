@@ -184,23 +184,13 @@ defmodule Ratio do
       |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
     end
 
-    def new(numerator = %Decimal{}, denominator) when is_float(denominator) do
-      Ratio.DecimalConversion.decimal_to_rational(numerator)
-      |> div(Ratio.FloatConversion.float_to_rational(denominator))
-    end
-
-    def new(numerator, denominator = %Decimal{}) when is_float(numerator) do
-      Ratio.FloatConversion.float_to_rational(numerator)
-      |> div(Ratio.DecimalConversion.decimal_to_rational(denominator))
-    end
-
     def new(numerator = %Decimal{}, denominator) when is_integer(denominator) do
       Ratio.DecimalConversion.decimal_to_rational(numerator)
       |> div(denominator)
     end
 
     def new(numerator, denominator = %Decimal{}) when is_integer(numerator) do
-      div(Ratio.DecimalConversion.decimal_to_rational(numerator), denominator)
+      div(Ratio.new(numerator, 1), Ratio.DecimalConversion.decimal_to_rational(denominator))
     end
   end
 
